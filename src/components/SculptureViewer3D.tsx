@@ -24,17 +24,17 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
 
   const currentT = useRef(0);
 
-  // Optical Material that transitions from Solid Satin Alabaster to Ultra-Clear Crystal (NOT blurry)
+  // Optical physical material: transitions from solid satin alabaster to razor-sharp optical crystal
   const madreMaterial = useMemo(() => {
     return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#f0e7db'),
+      color: new THREE.Color('#eee4d5'),
       transmission: 0.0,
       opacity: 1.0,
       transparent: true,
       roughness: 0.35,
       metalness: 0.02,
       ior: 1.46,
-      thickness: 0.25, // Thin optical shell so the baby inside is razor-sharp without blurry distortion
+      thickness: 0.22,
       attenuationColor: new THREE.Color('#fdf5ea'),
       attenuationDistance: 3.5,
       clearcoat: 0.3,
@@ -44,7 +44,7 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
     });
   }, []);
 
-  // Razor-sharp, realistic baby material with anatomically defined skin tone
+  // Anatomically defined baby material
   const bebeMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
       color: new THREE.Color('#e8c1a2'),
@@ -79,7 +79,6 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
     return cloned;
   }, [bebeGltf.scene, bebeMaterial]);
 
-  // Smooth frame-by-frame interpolation driven by scroll progress
   useFrame((_, delta) => {
     currentT.current = THREE.MathUtils.lerp(
       currentT.current,
@@ -88,54 +87,44 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
     );
     const t = currentT.current;
 
-    // Transition from Solid Satin Alabaster (t=0) to Crystal Clear Optical Glass (t=1)
-    // CRITICAL: roughness must drop to 0.02 so the baby inside is NOT blurry!
     madreMaterial.transmission = THREE.MathUtils.lerp(0.0, 0.98, t);
     madreMaterial.roughness = THREE.MathUtils.lerp(0.35, 0.02, t);
     madreMaterial.clearcoat = THREE.MathUtils.lerp(0.25, 0.95, t);
 
-    // Color clarifies from warm solid stone to luminous clear optical crystal
     madreMaterial.color.lerpColors(
       new THREE.Color('#eee4d5'),
       new THREE.Color('#faf5ee'),
       t
     );
 
-    // Baby inside illuminates gently with warm, sharp light (no blowout)
     bebeMaterial.emissiveIntensity = THREE.MathUtils.lerp(0.05, 0.28, t);
 
-    // Warm Base Uplight (2700K) illuminates from the travertine base
     if (baseLightRef.current) {
       baseLightRef.current.intensity = THREE.MathUtils.lerp(0.0, 3.6, t);
     }
-
-    // Soft Womb Interior Fill Light (gentle fill to define baby's face clearly)
     if (wombLightRef.current) {
       wombLightRef.current.intensity = THREE.MathUtils.lerp(0.0, 1.8, t);
     }
-
-    // Pedestal LED Ring
     if (ringRef.current) {
       ringRef.current.emissiveIntensity = THREE.MathUtils.lerp(0.0, 2.4, t);
     }
-
-    // Subtle cinematic scroll-driven camera rotation
     if (groupRef.current) {
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(-0.28, 0.08, t);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(-0.25, 0.08, t);
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.88, 0]}>
-      {/* Mother Torso: Solid Satin Alabaster -> Ultra-Clear Optical Crystal */}
+    // Centered vertically so the mother's entire head, hair, belly and travertine base are 100% visible
+    <group ref={groupRef} position={[0, -0.92, 0]}>
+      {/* Mother Torso */}
       <primitive object={madreScene} position={[0, 0, 0]} scale={1} />
 
-      {/* Realistic 3D Ultrasound Baby: positioned crisply in the ventral cavity */}
+      {/* Realistic 3D Ultrasound Baby inside Womb */}
       <group position={[-0.01, 0.21, 0.115]} scale={0.29}>
         <primitive object={bebeScene} />
       </group>
 
-      {/* Internal Womb Directional Fill (crisp, not blurry) */}
+      {/* Internal Womb Light */}
       <pointLight
         ref={wombLightRef}
         position={[0, 0.44, 0.2]}
@@ -158,7 +147,7 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
       {/* Natural Travertine Stone Plinth */}
       <group position={[0, -0.045, 0]}>
         <mesh>
-          <cylinderGeometry args={[0.54, 0.56, 0.08, 64]} />
+          <cylinderGeometry args={[0.54, 0.56, 0.08, 48]} />
           <meshStandardMaterial
             color="#e6dcce"
             roughness={0.88}
@@ -166,9 +155,8 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
           />
         </mesh>
 
-        {/* 2700K LED Ring Channel */}
         <mesh position={[0, 0.041, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.35, 0.43, 64]} />
+          <ringGeometry args={[0.35, 0.43, 48]} />
           <meshStandardMaterial
             ref={ringRef}
             color="#ff9d2e"
@@ -178,13 +166,13 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
           />
         </mesh>
 
-        {/* Soft Ambient Ground Contact Shadow */}
+        {/* Soft Ground Contact Shadow */}
         <mesh position={[0, -0.041, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.95, 64]} />
+          <circleGeometry args={[0.95, 48]} />
           <meshBasicMaterial
             color="#c9bcab"
             transparent
-            opacity={0.38}
+            opacity={0.35}
             depthWrite={false}
           />
         </mesh>
@@ -195,8 +183,8 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({ revealProgress }) => {
 
 const LoaderOverlay: React.FC = () => (
   <Html center>
-    <div className="px-6 py-3 bg-[#FAF7F2] border border-[#E5DEC9] text-center shadow-sm">
-      <p className="font-serif italic text-base text-[#8C6D46]">
+    <div className="px-5 py-2.5 bg-[#FAF7F2] border border-[#E5DEC9] text-center shadow-sm">
+      <p className="font-serif italic text-sm text-[#8C6D46]">
         Cargando escultura en luz natural...
       </p>
     </div>
@@ -206,59 +194,84 @@ const LoaderOverlay: React.FC = () => (
 export const SculptureViewer3D: React.FC = () => {
   const { openOrderModal } = useProductStore();
   const [revealProgress, setRevealProgress] = useState(0);
+  const [isInView, setIsInView] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sticky Scroll Driver: As the user scrolls through the 220vh track,
-  // the viewport stays pinned full-screen and computes a smooth 0.0 to 1.0 reveal progress.
+  // Highly optimized scroll listener using requestAnimationFrame (zero scroll lag)
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+
+    const updateScroll = () => {
       const el = containerRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const scrollableDistance = el.offsetHeight - window.innerHeight;
 
-      if (scrollableDistance <= 0) return;
-
-      // When rect.top is 0, we just pinned.
-      // Progress from 0 (at pin start) to 1 (at unpin end)
-      const scrolled = -rect.top;
-      const progress = Math.max(0, Math.min(1, scrolled / scrollableDistance));
-      setRevealProgress(progress);
+      if (scrollableDistance > 0) {
+        const scrolled = -rect.top;
+        const progress = Math.max(0, Math.min(1, scrolled / scrollableDistance));
+        setRevealProgress(progress);
+      }
+      ticking = false;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScroll);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    updateScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // IntersectionObserver to pause WebGL rendering completely when scrolled off-screen
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { rootMargin: '100px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   return (
-    // Outer scroll track: 240vh height gives the user comfortable, gradual control over the transition
+    // Outer scroll track: 180vh gives smooth, natural scroll feel without dragging out the page
     <div
       ref={containerRef}
       id="visor-3d"
-      className="relative h-[240vh] bg-[#FAF7F2] border-t border-[#E5DEC9]"
+      className="relative h-[180vh] bg-[#FAF7F2] border-t border-[#E5DEC9]"
     >
       {/* Sticky Full-Screen Viewport */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between">
         {/* Full-Screen 3D WebGL Canvas */}
         <div className="absolute inset-0 z-0">
           <Canvas
+            frameloop={isInView ? 'always' : 'never'}
             dpr={1}
-            camera={{ position: [0, 0.08, 2.15], fov: 33 }}
+            // CAMERA CALIBRATION: Positioned so the mother's entire body (head, hair, belly, hands, and base)
+            // is 100% visible and beautifully framed without any cutoffs!
+            camera={{ position: [0, 0.05, 2.75], fov: 42 }}
             gl={{
               antialias: true,
-              alpha: true,
+              alpha: false,
               powerPreference: 'high-performance',
               toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.12,
+              toneMappingExposure: 1.15,
             }}
             className="cursor-grab active:cursor-grabbing w-full h-full"
           >
-            {/* Museum Gallery Natural Sunlight Lighting */}
-            <ambientLight intensity={1.3} color="#fffcf8" />
+            <color attach="background" args={['#FAF7F2']} />
+
+            {/* Museum Gallery Studio Lights */}
+            <ambientLight intensity={1.35} color="#fffcf8" />
             <directionalLight
               position={[3.0, 4.2, 3.0]}
-              intensity={2.4}
+              intensity={2.3}
               color="#fffdfa"
             />
             <directionalLight
@@ -268,7 +281,7 @@ export const SculptureViewer3D: React.FC = () => {
             />
             <directionalLight
               position={[0, 2.2, -3.2]}
-              intensity={1.1}
+              intensity={1.0}
               color="#f4ebdf"
             />
 
@@ -279,38 +292,29 @@ export const SculptureViewer3D: React.FC = () => {
             <OrbitControls
               enablePan={false}
               enableZoom={false}
-              minDistance={1.7}
-              maxDistance={2.8}
+              minDistance={1.8}
+              maxDistance={3.5}
               minPolarAngle={Math.PI / 4.8}
               maxPolarAngle={Math.PI / 1.85}
               autoRotate={false}
-              target={[0, -0.06, 0]}
+              target={[0, -0.05, 0]}
             />
           </Canvas>
         </div>
 
-        {/* Soft Radial Vignette for Editorial Atmosphere */}
-        <div
-          className="absolute inset-0 pointer-events-none z-10"
-          style={{
-            background:
-              'radial-gradient(ellipse at 50% 50%, rgba(250, 247, 242, 0.15) 0%, rgba(250, 247, 242, 0.6) 75%, rgba(250, 247, 242, 0.95) 100%)',
-          }}
-        />
-
-        {/* Top Floating Editorial Overlay (Subtle, High Contrast) */}
-        <div className="relative z-20 pt-28 px-6 sm:px-12 lg:px-16 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pointer-events-none">
+        {/* Top Floating Editorial Overlay */}
+        <div className="relative z-10 pt-28 px-6 sm:px-12 lg:px-16 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pointer-events-none">
           <div className="max-w-xl space-y-2 pointer-events-auto">
             <span className="eyebrow block">
-              La Revelación · Estudio 3D a Pantalla Completa
+              La Revelación · Estudio Tridimensional
             </span>
-            <h2 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-[#2C2825] leading-[1.08]">
+            <h2 className="font-serif text-4xl sm:text-5xl font-light text-[#2C2825] leading-[1.12]">
               El misterio de la vida,{' '}
               <em className="italic font-normal text-[#8C6D46]">revelado en luz.</em>
             </h2>
             <p className="text-sm sm:text-base text-[#6E665E] font-light max-w-md">
-              Desplaza hacia abajo para transformar la escultura de alabastro sólido en resina
-              cristalina y desvelar con nitidez a tu bebé en su interior.
+              Desplaza suavemente para transformar el alabastro sólido en resina cristalina y
+              desvelar con nitidez a tu bebé en el interior.
             </p>
           </div>
 
@@ -321,48 +325,18 @@ export const SculptureViewer3D: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Floating Progress & Interactive Control Bar */}
-        <div className="relative z-20 pb-10 px-6 sm:px-12 lg:px-16 flex flex-col sm:flex-row justify-between items-end gap-6 pointer-events-none">
-          {/* Visual Scroll Reveal Meter */}
-          <div className="w-full sm:max-w-md space-y-2.5 pointer-events-auto bg-[#FAF7F2]/80 backdrop-blur-sm p-4 border border-[#E5DEC9]">
-            <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em] text-[#6E665E]">
-              <span className={revealProgress < 0.25 ? 'text-[#2C2825] font-semibold' : ''}>
-                I. Escultura Sólida
-              </span>
-              <span className={revealProgress > 0.7 ? 'text-[#8C6D46] font-semibold' : ''}>
-                II. Cristal & Bebé Revelado
-              </span>
-            </div>
-
-            {/* Continuous 1px Hairline Progress Bar */}
-            <div className="relative w-full h-[2px] bg-[#E5DEC9]">
-              <div
-                className="absolute top-0 left-0 h-full bg-[#8C6D46] transition-all duration-75"
-                style={{ width: `${Math.round(revealProgress * 100)}%` }}
-              />
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[#8C6D46] border border-[#FAF7F2] shadow-sm transition-all duration-75"
-                style={{
-                  left: `calc(${Math.round(revealProgress * 100)}% - 6px)`,
-                }}
-              />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <p className="font-serif italic text-xs text-[#8C6D46]">
-                {revealProgress < 0.2
-                  ? 'Desplaza suavemente para iniciar la transparencia...'
-                  : revealProgress < 0.8
-                  ? 'La resina se vuelve cristalina y enciende la luz de 2700K...'
-                  : 'Bebé 100% visible en su vientre con luz nocturna.'}
-              </p>
-              <span className="text-[10px] uppercase tracking-[0.16em] text-[#6E665E]">
-                {(revealProgress * 100).toFixed(0)}%
-              </span>
-            </div>
+        {/* Bottom Floating Editorial Bar: Zero Chunky Sliders, Pure Minimalist Luxury */}
+        <div className="relative z-10 pb-10 px-6 sm:px-12 lg:px-16 flex justify-between items-end gap-6 pointer-events-none">
+          <div className="pointer-events-auto">
+            <p className="font-serif italic text-sm text-[#6E665E]">
+              {revealProgress < 0.25
+                ? 'Escultura en alabastro sólido'
+                : revealProgress < 0.75
+                ? 'Resina cristalina revelando el interior...'
+                : 'Bebé visible en el vientre materno con luz de 2700K.'}
+            </p>
           </div>
 
-          {/* Action CTA Button */}
           <div className="pointer-events-auto">
             <button
               type="button"
