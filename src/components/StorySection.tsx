@@ -2,7 +2,7 @@ import React from 'react';
 
 export const StorySection: React.FC = () => {
   return (
-    <section id="el-atelier" className="bg-[#F2ECE1] py-28 lg:py-36 border-t border-[#E5DEC9]">
+    <section id="el-atelier" className="scroll-mt-20 bg-[#F2ECE1] py-24 sm:py-28 lg:py-36 border-t border-[#E5DEC9]">
       <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-14">
         {/* Centered Bridal Bliss Editorial Header */}
         <div className="max-w-xl mx-auto text-center space-y-6">

@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Html } from '@react-three/drei';
+import { OrbitControls, RoundedBox, useGLTF, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useProductStore } from '../store/useProductStore';
 
@@ -143,15 +143,34 @@ const BABY_FRAGMENT_SHADER = /* glsl */ `
 
 // ============================================================================
 // 2. MOTHER DEPTH PRE-PASS & SUBTLE FROSTED RESIN SHADER
-// Bit-identical gl_Position guarantees ZERO Z-fighting AND ZERO X-ray overlap
-// on the chin, hair, arms, or shoulders!
+// Includes warm 2700K up-light rising from the Roman Travertine pedestal!
 // ============================================================================
 const MOTHER_VERTEX_SHADER = /* glsl */ `
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
+  varying vec3 vSculptPos;
+  varying vec3 vSmoothBreastNormalWorld;
 
   void main() {
+    // Intrinsic anatomical coordinates of Madre.glb (after its +90deg X node rotation):
+    // x: left/right [-0.49, +0.49]
+    // y: vertical height from the bottom of the sculpture on the stone [0.00, 1.903]
+    // z: back-to-front depth [-0.43, +0.43] (front of belly is up to +0.43)
+    vSculptPos = vec3(position.x, -position.z, position.y);
+
+    // Smooth analytical breast normal in raw object space to eliminate the pinched/coarse
+    // nipple facets on the chest (y in 0.89..1.07, z in 0.06..0.195, |x| in 0.03..0.22)
+    float sideSign = position.x >= 0.0 ? 1.0 : -1.0;
+    vec3 dBreast = vec3(
+      (position.x - sideSign * 0.125) / 0.11,
+      ((-position.z) - 0.965) / 0.095,
+      (position.y - 0.06) / 0.12
+    );
+    vec3 smoothSculptN = normalize(vec3(dBreast.x * 0.52, dBreast.y * 0.62 + 0.14, 1.0));
+    vec3 rawSmoothN = vec3(smoothSculptN.x, smoothSculptN.z, -smoothSculptN.y);
+    vSmoothBreastNormalWorld = normalize(mat3(modelMatrix) * rawSmoothN);
+
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
     vWorldPos = worldPosition.xyz;
     vNormalWorld = normalize(mat3(modelMatrix) * normal);
@@ -179,16 +198,26 @@ const MOTHER_FRAGMENT_SHADER = /* glsl */ `
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
+  varying vec3 vSculptPos;
+  varying vec3 vSmoothBreastNormalWorld;
 
   void main() {
-    vec3 N = normalize(vNormalWorld);
+    // 1. Smooth Breast / Nipple Region Mask in intrinsic sculpture coordinates
+    // Smooths out the pointed nipple facets (y~0.965, z<=0.176) into a soft neoclassical contour
+    // while strictly excluding the upper forearm/hand in front (y<0.94, z>0.182)
+    float breastYMask = smoothstep(0.915, 0.945, vSculptPos.y) * (1.0 - smoothstep(1.045, 1.085, vSculptPos.y));
+    float breastXMask = smoothstep(0.035, 0.065, abs(vSculptPos.x)) * (1.0 - smoothstep(0.190, 0.225, abs(vSculptPos.x)));
+    float breastZMask = smoothstep(0.070, 0.105, vSculptPos.z) * (1.0 - smoothstep(0.174, 0.184, vSculptPos.z));
+    float breastMask = breastYMask * breastXMask * breastZMask;
+
+    vec3 N = normalize(mix(normalize(vNormalWorld), normalize(vSmoothBreastNormalWorld), breastMask * 0.92));
     vec3 V = normalize(vViewDir);
 
     float ndotv = clamp(dot(N, V), 0.0, 1.0);
     float fresnel = pow(1.0 - ndotv, 2.15);
     float rimFine = pow(1.0 - ndotv, 3.4);
 
-    // Soft museum studio lighting (high wrap so shadows are creamy cashmere, never dark/black)
+    // Soft museum studio lighting
     vec3 keyDir = normalize(vec3(0.48, 0.76, 0.68));
     vec3 fillDir = normalize(vec3(-0.65, 0.42, 0.52));
 
@@ -201,43 +230,259 @@ const MOTHER_FRAGMENT_SHADER = /* glsl */ `
     vec3 bodyTone = mix(uDeepColor, uShellColor, lightMix);
     bodyTone = mix(bodyTone, uShellColor, hemi * 0.25);
 
-    // Un-rotate vWorldPos by -uGroupRotY so the womb window stays 100% locked
-    // to the front of the mother's belly as the sculpture turns on scroll!
-    float c = cos(uGroupRotY);
-    float s = sin(uGroupRotY);
-    vec3 bodyPos = vec3(
-      vWorldPos.x * c - vWorldPos.z * s,
-      vWorldPos.y,
-      vWorldPos.x * s + vWorldPos.z * c
-    );
-
-    // Localized Womb Window centered on the baby in Sculpture-Locked Space (y = -0.36, z = 0.12):
-    // Head, face, chin, hair, shoulders, back, and arms remain 100% solid porcelain (alpha = 1.0)!
-    vec3 wombCenter = vec3(0.0, -0.36, 0.12);
-    vec3 dWomb = (bodyPos - wombCenter) * vec3(1.06, 1.05, 0.98);
+    // 2. Intrinsic Belly Womb Window in vSculptPos (100% locked to the Mother's belly dome!)
+    // Baby spans vSculptPos.y in [0.21, 0.73]; Belly dome spans vSculptPos.y in [0.23, 0.78]
+    vec3 wombCenter = vec3(-0.01, 0.51, 0.33);
+    vec3 dWomb = (vSculptPos - wombCenter) / vec3(0.28, 0.31, 0.26);
     float distToWomb = length(dWomb);
 
-    // Strictly on the front/side-front belly hemisphere
-    float forwardMask = smoothstep(-0.06, 0.05, bodyPos.z);
-    float wombWindow = (1.0 - smoothstep(0.18, 0.37, distToWomb)) * forwardMask;
-    float wombGlowField = exp(-distToWomb * 2.2) * forwardMask;
+    // Strict anatomical boundaries:
+    // - Thighs & legs (vSculptPos.y < 0.22) are 100% OPAQUE (never transparent)
+    float aboveLegsMask = smoothstep(0.22, 0.30, vSculptPos.y);
+    // - Upper belly stays open over the baby's head (up to y = 0.74), closing right under the upper hand (y > 0.79)
+    float belowUpperHandMask = 1.0 - smoothstep(0.73, 0.795, vSculptPos.y);
+    // - Front belly hemisphere only (z > 0.12)
+    float forwardBellyMask = smoothstep(0.11, 0.23, vSculptPos.z);
 
-    // Subtle 2700K golden subsurface warmth radiating through the belly and cradling hands
-    float internalScatter = wombGlowField * (0.45 + 0.55 * fresnel) * uWarmLight * uReveal;
-    vec3 color = mix(bodyTone, bodyTone + uWombGlowColor * 0.55, internalScatter);
+    float bellyBoundsMask = aboveLegsMask * belowUpperHandMask * forwardBellyMask;
+    float wombWindow = (1.0 - smoothstep(0.58, 1.06, distToWomb)) * bellyBoundsMask;
+    float wombGlowField = exp(-distToWomb * 1.65) * bellyBoundsMask;
 
-    // Silky pearl specular & Fresnel rim highlights (softened over the womb window so glare never hides the baby)
+    // Subtle warm 2700K contact reflection only at the very bottom rim (y < 0.05) where the opaque thighs meet the stone
+    float baseContactRim = exp(-vSculptPos.y * 30.0) * 0.25 * uWarmLight;
+
+    // Combine Womb Subsurface Glow (strictly inside the belly) + subtle base rim reflection
+    float internalScatter = wombGlowField * (0.48 + 0.52 * fresnel) * uWarmLight * uReveal;
+    vec3 color = mix(bodyTone, bodyTone + uWombGlowColor * 0.52, internalScatter);
+    color += uWombGlowColor * baseContactRim;
+
+    // Silky pearl specular & Fresnel rim highlights (softened on breasts to avoid shiny nipple spots)
     vec3 H = normalize(keyDir + V);
-    float spec = pow(max(dot(N, H), 0.0), 34.0) * 0.22 * (1.0 - wombWindow * 0.65);
-    color = mix(color, uRimColor, rimFine * 0.42 * (1.0 - wombWindow * 0.45));
+    float specAtten = (1.0 - wombWindow * 0.65) * (1.0 - breastMask * 0.88);
+    float spec = pow(max(dot(N, H), 0.0), 34.0) * 0.20 * specAtten;
+    color = mix(color, uRimColor, rimFine * 0.40 * (1.0 - wombWindow * 0.45) * (1.0 - breastMask * 0.55));
     color += uRimColor * spec;
 
-    // Crystal-Clear Subtle Womb Alpha even at 3/4 side angles:
+    // Crystal-Clear Subtle Womb Alpha focused strictly on the belly dome
     float bellyEdgeFresnel = pow(1.0 - ndotv, 3.2);
     float windowAlpha = mix(uWombCenterAlpha, 0.58, bellyEdgeFresnel * 0.55);
     float targetAlpha = mix(1.0, windowAlpha, wombWindow * uReveal);
 
     gl_FragColor = vec4(color, targetAlpha);
+  }
+`;
+
+// ============================================================================
+// 3. ARCHITECTURAL ROMAN TRAVERTINE SLAB SHADER
+// Procedural sedimentary veins, natural pitted stone pores, top caustic up-light,
+// and warm 2700K under-lip bounce light (matches reference photos!)
+// ============================================================================
+const TRAVERTINE_VERTEX_SHADER = /* glsl */ `
+  varying vec3 vLocalPos;
+  varying vec3 vNormalLocal;
+  varying vec3 vNormalWorld;
+  varying vec3 vViewDir;
+
+  void main() {
+    vLocalPos = position;
+    vNormalLocal = normalize(normal);
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vNormalWorld = normalize(mat3(modelMatrix) * normal);
+    vViewDir = normalize(cameraPosition - worldPosition.xyz);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const TRAVERTINE_FRAGMENT_SHADER = /* glsl */ `
+  uniform vec3 uStoneLight;
+  uniform vec3 uStoneMid;
+  uniform vec3 uStonePore;
+  uniform vec3 uGlowColor;
+  uniform float uWarmLight;
+  uniform float uDarkTheme;
+
+  varying vec3 vLocalPos;
+  varying vec3 vNormalLocal;
+  varying vec3 vNormalWorld;
+  varying vec3 vViewDir;
+
+  // Fast 3D procedural hash & value noise for authentic Roman Travertine stone
+  float hash3(vec3 p) {
+    p = fract(p * vec3(443.897, 441.423, 437.195));
+    p += dot(p, p.yzx + 19.19);
+    return fract((p.x + p.y) * p.z);
+  }
+
+  float noise3(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(
+        mix(hash3(i + vec3(0, 0, 0)), hash3(i + vec3(1, 0, 0)), f.x),
+        mix(hash3(i + vec3(0, 1, 0)), hash3(i + vec3(1, 1, 0)), f.x),
+        f.y
+      ),
+      mix(
+        mix(hash3(i + vec3(0, 0, 1)), hash3(i + vec3(1, 0, 1)), f.x),
+        mix(hash3(i + vec3(0, 1, 1)), hash3(i + vec3(1, 1, 1)), f.x),
+        f.y
+      ),
+      f.z
+    );
+  }
+
+  void main() {
+    vec3 N = normalize(vNormalWorld);
+    vec3 V = normalize(vViewDir);
+
+    // 1. Horizontal Sedimentary Bedding Veins (stretched along X and Z, compressed along Y)
+    vec3 veinCoord = vec3(vLocalPos.x * 3.6, vLocalPos.y * 34.0, vLocalPos.z * 3.6);
+    float n1 = noise3(veinCoord);
+    float n2 = noise3(veinCoord * 2.5 + vec3(4.1, 1.7, 8.3));
+    float veins = sin(vLocalPos.y * 68.0 + n1 * 4.5 + n2 * 2.2) * 0.5 + 0.5;
+    float fineGrain = noise3(vLocalPos * 42.0);
+
+    // 2. Fine Natural Capillary Travertine Pores (delicate horizontal pitting like Italian Roman Travertine)
+    vec3 poreCoord = vec3(vLocalPos.x * 34.0, vLocalPos.y * 145.0, vLocalPos.z * 34.0);
+    float poreNoise = noise3(poreCoord) * 0.60 + noise3(poreCoord * 2.4 + vec3(2.3, 5.1, 1.9)) * 0.40;
+    vec3 microCoord = vec3(vLocalPos.x * 72.0, vLocalPos.y * 210.0, vLocalPos.z * 72.0);
+    float microNoise = noise3(microCoord);
+    float isSideFace = 1.0 - smoothstep(0.4, 0.8, abs(vNormalLocal.y));
+
+    // Delicate capillary pores on the cut vertical faces, honed smooth on top
+    float macroPore = (1.0 - smoothstep(0.19, 0.25, poreNoise)) * isSideFace;
+    float microPore = (1.0 - smoothstep(0.21, 0.27, microNoise)) * mix(0.25, 0.85, isSideFace);
+    float poreMask = clamp(macroPore * 0.72 + microPore * 0.55, 0.0, 1.0);
+
+    // Base stone color with sedimentary bands & delicate pore occlusion
+    vec3 stoneColor = mix(uStoneMid, uStoneLight, veins * 0.65 + fineGrain * 0.35);
+    stoneColor = mix(stoneColor, uStonePore, poreMask * 0.68);
+
+    // 3. Architectural Studio Lighting & Bevel Highlight
+    vec3 keyDir = normalize(vec3(0.45, 0.72, 0.68));
+    vec3 fillDir = normalize(vec3(-0.60, 0.48, 0.52));
+    float diffKey = clamp(dot(N, keyDir), 0.0, 1.0);
+    float diffFill = clamp(dot(N, fillDir), 0.0, 1.0);
+    float topMask = smoothstep(0.2, 0.9, vNormalLocal.y);
+
+    float lighting = mix(0.76, 1.04, diffKey * 0.65 + diffFill * 0.35) * mix(0.93, 1.03, topMask);
+    vec3 color = stoneColor * lighting;
+
+    // Subtle honed stone bevel specular
+    vec3 H = normalize(keyDir + V);
+    float bevelSpec = pow(max(dot(N, H), 0.0), 32.0) * 0.12 * (1.0 - poreMask);
+    color += vec3(1.0, 0.98, 0.94) * bevelSpec;
+
+    // 4. Embedded 2700K Up-Light on Top Face (glowing softly right under the sculpture's base)
+    if (vNormalLocal.y > 0.1) {
+      float radialDist = length(vLocalPos.xz * vec2(1.0, 1.18));
+      // Warm light ring right where the translucent resin base meets the travertine stone
+      float upLightRing = exp(-pow((radialDist - 0.33) * 5.8, 2.0));
+      float upLightCore = 1.0 - smoothstep(0.0, 0.39, radialDist);
+      float topGlow = (upLightRing * 0.55 + upLightCore * 0.42) * uWarmLight;
+      color += uGlowColor * topGlow * mix(0.38, 0.68, uDarkTheme);
+    }
+
+    // 5. Underside only (vNormalLocal.y < -0.5) catches the warm 2700K brass cove reflection
+    if (vNormalLocal.y < -0.3) {
+      color += uGlowColor * uWarmLight * mix(0.35, 0.65, uDarkTheme);
+    }
+
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+// ============================================================================
+// 4. RECESSED BRUSHED BRASS & 2700K LED COVE PLINTH SHADER
+// ============================================================================
+const BRASS_PLINTH_VERTEX_SHADER = /* glsl */ `
+  varying vec3 vLocalPos;
+  varying vec3 vNormalWorld;
+  varying vec3 vViewDir;
+
+  void main() {
+    vLocalPos = position;
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vNormalWorld = normalize(mat3(modelMatrix) * normal);
+    vViewDir = normalize(cameraPosition - worldPosition.xyz);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const BRASS_PLINTH_FRAGMENT_SHADER = /* glsl */ `
+  uniform float uWarmLight;
+  uniform float uDarkTheme;
+
+  varying vec3 vLocalPos;
+  varying vec3 vNormalWorld;
+  varying vec3 vViewDir;
+
+  void main() {
+    vec3 N = normalize(vNormalWorld);
+    vec3 V = normalize(vViewDir);
+
+    // Brushed champagne-gold metallic base
+    vec3 brassDark = vec3(0.48, 0.34, 0.18);
+    vec3 brassLight = vec3(0.88, 0.68, 0.40);
+    vec3 ledWarm = vec3(1.0, 0.72, 0.32);
+
+    vec3 keyDir = normalize(vec3(0.5, 0.6, 0.7));
+    float diff = clamp(dot(N, keyDir) * 0.5 + 0.5, 0.0, 1.0);
+    vec3 H = normalize(keyDir + V);
+    float spec = pow(max(dot(N, H), 0.0), 36.0);
+
+    vec3 brassColor = mix(brassDark, brassLight, diff) + vec3(1.0, 0.90, 0.70) * spec * 0.35;
+
+    // Intense 2700K LED cove light strip along the upper recess (where the travertine overhangs)
+    // vLocalPos.y is in [-0.017, +0.017]
+    float topCoveFactor = smoothstep(-0.012, 0.016, vLocalPos.y);
+    vec3 finalColor = mix(brassColor, ledWarm * 1.15, topCoveFactor * uWarmLight * mix(0.75, 0.95, uDarkTheme));
+
+    gl_FragColor = vec4(finalColor, 1.0);
+  }
+`;
+
+// ============================================================================
+// 5. RECTANGULAR FLOOR SHADOW & WARM 2700K SPILL HALO SHADER
+// ============================================================================
+const FLOOR_GLOW_VERTEX_SHADER = /* glsl */ `
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv * 2.0 - 1.0;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const FLOOR_GLOW_FRAGMENT_SHADER = /* glsl */ `
+  uniform float uWarmLight;
+  uniform float uDarkTheme;
+
+  varying vec2 vUv;
+
+  // 2D rounded box signed distance
+  float sdRoundBox(vec2 p, vec2 b, float r) {
+    vec2 q = abs(p) - b + r;
+    return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
+  }
+
+  void main() {
+    // 1:1 Square SDF matching the square travertine & recessed brass plinth proportions
+    float d = sdRoundBox(vUv, vec2(0.62, 0.62), 0.06);
+
+    // Crisp contact shadow right under the brass sub-plinth
+    float shadow = 1.0 - smoothstep(-0.04, 0.18, d);
+    // Soft warm 2700K light spill radiating around the square plinth perimeter
+    float warmHalo = exp(-max(0.0, d + 0.02) * 5.0) * (1.0 - smoothstep(0.15, 0.44, d));
+
+    vec3 shadowColor = mix(vec3(0.76, 0.70, 0.62), vec3(0.04, 0.03, 0.02), uDarkTheme);
+    vec3 glowColor = vec3(1.0, 0.66, 0.26);
+
+    float alpha = clamp(shadow * mix(0.34, 0.58, uDarkTheme) + warmHalo * uWarmLight * mix(0.42, 0.66, uDarkTheme), 0.0, 0.88);
+    vec3 color = mix(shadowColor, glowColor, clamp(warmHalo * uWarmLight * 1.38, 0.0, 1.0));
+
+    gl_FragColor = vec4(color, alpha);
   }
 `;
 
@@ -258,13 +503,11 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
   const madreGltf = useGLTF('/models/Madre.glb', DRACO_URL);
   const bebeGltf = useGLTF('/models/bebe.glb', DRACO_URL);
 
-  const ringRef = useRef<THREE.MeshBasicMaterial>(null);
-  const haloRef = useRef<THREE.MeshBasicMaterial>(null);
-  const baseMatRef = useRef<THREE.MeshStandardMaterial>(null);
   const groupRef = useRef<THREE.Group>(null);
 
   const currentReveal = useRef(0.95);
   const currentWarm = useRef(warmLightOn ? 1.0 : 0.12);
+  const currentDark = useRef(sanctuaryDark ? 1.0 : 0.0);
   const currentRotY = useRef(0.06);
   const targetPreset = FINISH_PRESETS[finishId];
 
@@ -284,8 +527,18 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
     () => new THREE.Color(targetPreset.wombGlowColor),
     [targetPreset]
   );
-  const targetPedestalColor = useMemo(
-    () => new THREE.Color(sanctuaryDark ? '#2B2521' : '#EAE2D6'),
+
+  // Travertine stone palette (adapts subtly between Day Atelier and Night Sanctuary)
+  const targetStoneLight = useMemo(
+    () => new THREE.Color(sanctuaryDark ? '#DED2C1' : '#F3ECE1'),
+    [sanctuaryDark]
+  );
+  const targetStoneMid = useMemo(
+    () => new THREE.Color(sanctuaryDark ? '#BAA995' : '#DFD3C2'),
+    [sanctuaryDark]
+  );
+  const targetStonePore = useMemo(
+    () => new THREE.Color(sanctuaryDark ? '#70604E' : '#9C8A74'),
     [sanctuaryDark]
   );
 
@@ -340,6 +593,58 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
     });
   }, []);
 
+  // Architectural Roman Travertine Material
+  const travertineMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: TRAVERTINE_VERTEX_SHADER,
+      fragmentShader: TRAVERTINE_FRAGMENT_SHADER,
+      uniforms: {
+        uStoneLight: { value: new THREE.Color('#EDE4D7') },
+        uStoneMid: { value: new THREE.Color('#D6C8B4') },
+        uStonePore: { value: new THREE.Color('#9E8D79') },
+        uGlowColor: { value: new THREE.Color('#FFA84C') },
+        uWarmLight: { value: 1.0 },
+        uDarkTheme: { value: 0.0 },
+      },
+    });
+  }, []);
+
+  // Recessed Brushed Brass & LED Cove Material
+  const brassPlinthMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: BRASS_PLINTH_VERTEX_SHADER,
+      fragmentShader: BRASS_PLINTH_FRAGMENT_SHADER,
+      uniforms: {
+        uWarmLight: { value: 1.0 },
+        uDarkTheme: { value: 0.0 },
+      },
+    });
+  }, []);
+
+  // Soft Floor Contact Shadow & Warm 2700K Halo Material
+  const floorGlowMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: FLOOR_GLOW_VERTEX_SHADER,
+      fragmentShader: FLOOR_GLOW_FRAGMENT_SHADER,
+      uniforms: {
+        uWarmLight: { value: 1.0 },
+        uDarkTheme: { value: 0.0 },
+      },
+      transparent: true,
+      depthWrite: false,
+    });
+  }, []);
+
+  // Top Optical Diffuser Ring (subtle warm glass aperture where the sculpture sits on the stone)
+  const topApertureMaterial = useMemo(() => {
+    return new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#FFB866'),
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+    });
+  }, []);
+
   const bebeScene = useMemo(() => {
     const cloned = bebeGltf.scene.clone(true);
     cloned.traverse((child) => {
@@ -390,22 +695,21 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
     const speed = dt * 6.0;
 
     const p = progressRef.current;
-    // Gentle scroll-linked reveal & orbital rotation:
-    // As the user scrolls past the section, the sculpture smoothly turns from a 3/4 profile (-0.42 rad)
-    // through the front view (0.06 rad) to the opposite 3/4 angle (+0.38 rad), so users who never drag
-    // still experience the full 3D depth automatically!
     const targetReveal = 0.35 + Math.min(1, p * 1.35) * 0.65;
     const targetRotY = THREE.MathUtils.lerp(-0.42, 0.38, p);
     const targetWarm = warmLightOn ? 1.0 : 0.08;
+    const targetDark = sanctuaryDark ? 1.0 : 0.0;
 
     currentReveal.current = THREE.MathUtils.lerp(currentReveal.current, targetReveal, speed);
     currentRotY.current = THREE.MathUtils.lerp(currentRotY.current, targetRotY, speed);
     currentWarm.current = THREE.MathUtils.lerp(currentWarm.current, targetWarm, speed);
+    currentDark.current = THREE.MathUtils.lerp(currentDark.current, targetDark, speed);
 
     if (groupRef.current) {
       groupRef.current.rotation.y = currentRotY.current;
     }
 
+    // Update Mother uniforms
     madreFrontMaterial.uniforms.uReveal.value = currentReveal.current;
     madreFrontMaterial.uniforms.uWarmLight.value = currentWarm.current;
     madreFrontMaterial.uniforms.uGroupRotY.value = currentRotY.current;
@@ -419,32 +723,46 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
       speed
     );
 
+    // Update Baby SSS uniform
     bebeMaterial.uniforms.uWarmLight.value = currentWarm.current;
 
-    if (ringRef.current) {
-      ringRef.current.opacity = THREE.MathUtils.lerp(0.18, 0.92, currentWarm.current);
-    }
-    if (haloRef.current) {
-      haloRef.current.opacity = THREE.MathUtils.lerp(0.0, 0.32, currentWarm.current);
-    }
-    if (baseMatRef.current) {
-      baseMatRef.current.color.lerp(targetPedestalColor, speed);
-    }
+    // Update Roman Travertine & Brass Plinth uniforms
+    travertineMaterial.uniforms.uStoneLight.value.lerp(targetStoneLight, speed);
+    travertineMaterial.uniforms.uStoneMid.value.lerp(targetStoneMid, speed);
+    travertineMaterial.uniforms.uStonePore.value.lerp(targetStonePore, speed);
+    travertineMaterial.uniforms.uGlowColor.value.lerp(targetGlowColor, speed);
+    travertineMaterial.uniforms.uWarmLight.value = currentWarm.current;
+    travertineMaterial.uniforms.uDarkTheme.value = currentDark.current;
+
+    brassPlinthMaterial.uniforms.uWarmLight.value = currentWarm.current;
+    brassPlinthMaterial.uniforms.uDarkTheme.value = currentDark.current;
+
+    floorGlowMaterial.uniforms.uWarmLight.value = currentWarm.current;
+    floorGlowMaterial.uniforms.uDarkTheme.value = currentDark.current;
+
+    topApertureMaterial.opacity = THREE.MathUtils.lerp(0.1, 0.55, currentWarm.current);
 
     const revealDiff = Math.abs(targetReveal - currentReveal.current);
     const rotDiff = Math.abs(targetRotY - currentRotY.current);
     const warmDiff = Math.abs(targetWarm - currentWarm.current);
+    const darkDiff = Math.abs(targetDark - currentDark.current);
     const colorDiff =
       Math.abs(madreFrontMaterial.uniforms.uShellColor.value.r - targetShellColor.r) +
       Math.abs(madreFrontMaterial.uniforms.uShellColor.value.g - targetShellColor.g);
 
-    if (revealDiff > 0.001 || rotDiff > 0.001 || warmDiff > 0.001 || colorDiff > 0.002) {
+    if (
+      revealDiff > 0.001 ||
+      rotDiff > 0.001 ||
+      warmDiff > 0.001 ||
+      darkDiff > 0.001 ||
+      colorDiff > 0.002
+    ) {
       invalidate();
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.76, 0]} scale={0.84} rotation={[0, 0.06, 0]}>
+    <group ref={groupRef} position={[0, -0.62, 0]} scale={0.80} rotation={[0, 0.06, 0]}>
       {/* Pass 1: Baby with Subsurface Scattering */}
       <group position={[-0.01, 0.21, 0.095]} scale={0.275}>
         <primitive object={bebeScene} />
@@ -456,39 +774,40 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
       {/* Pass 3: Mother Creamy Porcelain & Localized Womb Window */}
       <primitive object={madreFrontScene} position={[0, 0, 0]} scale={1} />
 
-      {/* Handcrafted Travertine Pedestal & 2700K Warm LED Ring */}
-      <group position={[0, -0.045, 0]}>
-        <mesh>
-          <cylinderGeometry args={[0.54, 0.56, 0.08, 48]} />
-          <meshStandardMaterial
-            ref={baseMatRef}
-            color={sanctuaryDark ? '#2B2521' : '#EAE2D6'}
-            roughness={0.85}
-            metalness={0.05}
-          />
+      {/* =====================================================================
+          ARCHITECTURAL SQUARE ROMAN TRAVERTINE SLAB & RECESSED BRASS 2700K PLINTH
+          Generous 1:1 square proportions matching reference photography:
+          wide porous travertine stone block over a recessed warm golden brass sub-base
+          ===================================================================== */}
+      <group position={[0, 0, 0.01]}>
+        {/* 1. Upper Hand-Cut 1:1 Square Roman Travertine Stone Slab with micro-chamfered edges */}
+        <RoundedBox
+          args={[1.34, 0.132, 1.34]}
+          radius={0.008}
+          smoothness={4}
+          position={[0, -0.066, 0]}
+          material={travertineMaterial}
+        />
+
+        {/* 2. Subtle Embedded Optical Up-Light Aperture on Top of the Stone (under the torso) */}
+        <mesh position={[0, 0.001, -0.01]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.29, 0.38, 64]} />
+          <primitive object={topApertureMaterial} attach="material" />
         </mesh>
 
-        {/* Warm 2700K LED Recessed Ring */}
-        <mesh position={[0, 0.041, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.34, 0.43, 64]} />
-          <meshBasicMaterial
-            ref={ringRef}
-            color="#FFB866"
-            transparent
-            opacity={0.9}
-          />
-        </mesh>
+        {/* 3. Recessed 1:1 Square Brushed Champagne-Brass Sub-Plinth with 2700K Cove Light Strip */}
+        <RoundedBox
+          args={[1.12, 0.042, 1.12]}
+          radius={0.004}
+          smoothness={2}
+          position={[0, -0.151, 0]}
+          material={brassPlinthMaterial}
+        />
 
-        {/* Soft Warm Floor Halo */}
-        <mesh position={[0, 0.042, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.52, 48]} />
-          <meshBasicMaterial
-            ref={haloRef}
-            color="#FFA84C"
-            transparent
-            opacity={0.32}
-            depthWrite={false}
-          />
+        {/* 4. Soft Architectural Square Floor Contact Shadow & Warm 2700K Light Spill */}
+        <mesh position={[0, -0.173, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[1.86, 1.86]} />
+          <primitive object={floorGlowMaterial} attach="material" />
         </mesh>
       </group>
     </group>
@@ -529,8 +848,6 @@ export const SculptureViewer3D: React.FC = () => {
       const vh = window.innerHeight;
 
       if (rect.bottom >= -150 && rect.top <= vh + 150) {
-        // Maps scroll from when section enters bottom (top = vh * 0.85)
-        // to when section exits top (top = -vh * 0.35)
         const start = vh * 0.85;
         const end = -vh * 0.35;
         const raw = (start - rect.top) / (start - end);
@@ -557,210 +874,240 @@ export const SculptureViewer3D: React.FC = () => {
 
   const bgColor = sanctuaryDark ? '#1B1714' : '#FAF7F2';
 
+  const renderControlsDock = () => (
+    <div
+      className={`inline-flex items-center gap-3.5 px-4 py-2.5 rounded-full border backdrop-blur-md transition-all duration-300 shadow-sm ${
+        sanctuaryDark
+          ? 'bg-[#26211D]/90 border-[#3D352E]'
+          : 'bg-[#FAF7F2]/90 border-[#E5DEC9]'
+      }`}
+    >
+      {(Object.keys(FINISH_PRESETS) as ResinFinishId[]).map((key) => {
+        const preset = FINISH_PRESETS[key];
+        const active = finishId === key;
+        return (
+          <button
+            key={key}
+            type="button"
+            aria-label={preset.hint}
+            title={preset.hint}
+            onClick={() => setFinishId(key)}
+            className={`relative w-6 h-6 rounded-full transition-transform duration-300 flex items-center justify-center ${
+              active ? 'scale-110' : 'opacity-75 hover:opacity-100 hover:scale-105'
+            }`}
+          >
+            <span
+              className="w-5 h-5 rounded-full block shadow-inner"
+              style={{
+                background: preset.swatchGradient,
+                border: `1px solid ${preset.swatchBorder}`,
+              }}
+            />
+            {active && (
+              <span
+                className={`absolute -inset-1 rounded-full border transition-colors ${
+                  sanctuaryDark ? 'border-[#D4B07B]' : 'border-[#8C6D46]'
+                }`}
+              />
+            )}
+          </button>
+        );
+      })}
+
+      {/* Hairline Divider */}
+      <span
+        className={`h-4 w-[1px] mx-0.5 ${
+          sanctuaryDark ? 'bg-[#3D352E]' : 'bg-[#E5DEC9]'
+        }`}
+      />
+
+      {/* Single Intuitive Day / Night 2700K Atmosphere Dot */}
+      <button
+        type="button"
+        onClick={() => setSanctuaryDark((v) => !v)}
+        title={sanctuaryDark ? 'Ver con luz de día' : 'Ver en penumbra nocturna 2700K'}
+        aria-label={sanctuaryDark ? 'Ver con luz de día' : 'Ver en penumbra nocturna 2700K'}
+        className={`inline-flex items-center gap-2 pl-1 pr-2 py-0.5 rounded-full text-[11px] font-serif italic transition-colors ${
+          sanctuaryDark
+            ? 'text-[#FFB866]'
+            : 'text-[#6E665E] hover:text-[#2C2825]'
+        }`}
+      >
+        <span
+          className={`w-3.5 h-3.5 rounded-full transition-all flex items-center justify-center ${
+            sanctuaryDark
+              ? 'bg-[#FFB866] shadow-[0_0_10px_#FFA84C]'
+              : 'bg-[#2C2825]'
+          }`}
+        />
+        <span>{sanctuaryDark ? 'Noche' : 'Día'}</span>
+      </button>
+    </div>
+  );
+
+  const renderOrderCta = () => (
+    <button
+      type="button"
+      onClick={() => openOrderModal()}
+      className={`inline-flex items-center gap-3.5 px-5 py-2.5 rounded-full border text-[11px] uppercase tracking-[0.22em] backdrop-blur-md transition-all duration-300 group whitespace-nowrap ${
+        sanctuaryDark
+          ? 'bg-[#26211D]/90 border-[#D4B07B]/50 text-[#FAF7F2] hover:border-[#D4B07B]'
+          : 'bg-[#FAF7F2]/90 border-[#2C2825]/30 text-[#2C2825] hover:border-[#8C6D46] hover:text-[#8C6D46]'
+      }`}
+    >
+      <span>Encargar esta Obra</span>
+      <span className="text-[#8C6D46] group-hover:translate-x-1 transition-transform">
+        →
+      </span>
+    </button>
+  );
+
   return (
     <section
       ref={sectionRef}
       id="visor-3d"
       style={{ backgroundColor: bgColor }}
-      className="relative w-full h-[92vh] min-h-[660px] max-h-[920px] border-t border-[#E5DEC9] overflow-hidden transition-colors duration-300"
+      className="scroll-mt-20 relative w-full border-t border-[#E5DEC9] overflow-hidden transition-colors duration-300"
     >
-      {/* Demand-Driven WebGL Canvas */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{ touchAction: 'pan-y' }}
-        onPointerDown={() => {
-          if (!hasInteracted) setHasInteracted(true);
-        }}
-      >
-        <Canvas
-          frameloop="demand"
-          dpr={[1, 1.5]}
-          camera={{ position: [0, 0.04, 2.85], fov: 40 }}
-          gl={{
-            antialias: true,
-            alpha: true,
-            powerPreference: 'high-performance',
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.04,
-          }}
-          onCreated={({ invalidate }) => {
-            invalidateRef.current = invalidate;
-          }}
-          style={{ touchAction: 'pan-y' }}
-          className="cursor-grab active:cursor-grabbing w-full h-full"
-        >
-          <ambientLight intensity={0.95} color="#fffcf8" />
-          <directionalLight position={[2.5, 3.5, 2.5]} intensity={1.15} color="#fffdfa" />
-
-          <Suspense fallback={<LoaderOverlay />}>
-            <SculptureMeshes
-              progressRef={progressRef}
-              finishId={finishId}
-              warmLightOn={true}
-              sanctuaryDark={sanctuaryDark}
-            />
-          </Suspense>
-
-          <OrbitControls
-            makeDefault
-            enablePan={false}
-            enableZoom={false}
-            enableDamping={true}
-            dampingFactor={0.045}
-            rotateSpeed={0.75}
-            minPolarAngle={Math.PI / 4.2}
-            maxPolarAngle={Math.PI / 1.85}
-            target={[0, 0.0, 0]}
-          />
-        </Canvas>
-      </div>
-
-      {/* Whisper-Quiet Editorial Narrative Overlay (Top-Left) */}
-      <div className="relative z-10 pt-12 sm:pt-14 px-6 sm:px-12 lg:px-16 flex justify-between items-start pointer-events-none">
-        <div className="max-w-md space-y-2.5 pointer-events-auto">
-          <span
-            className={`eyebrow block transition-colors duration-300 ${
-              sanctuaryDark ? '!text-[#D4B07B]' : ''
-            }`}
-          >
-            El Santuario · Luz de 2700K
-          </span>
-          <h2
-            className={`font-serif text-4xl sm:text-5xl font-light leading-[1.12] transition-colors duration-300 ${
-              sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
-            }`}
-          >
-            El misterio de la vida,{' '}
-            <em
-              className={`italic font-normal transition-colors duration-300 ${
-                sanctuaryDark ? 'text-[#DFB882]' : 'text-[#8C6D46]'
-              }`}
-            >
-              revelado en luz.
-            </em>
-          </h2>
-          <p
-            className={`text-sm sm:text-[15px] font-light max-w-sm transition-colors duration-300 ${
-              sanctuaryDark ? 'text-[#C8BFB5]' : 'text-[#6E665E]'
-            }`}
-          >
-            Al deslizar o girar la pieza, la porcelana sedosa desvela a tu bebé bajo una cálida
-            luz maternal.
-          </p>
-        </div>
-      </div>
-
-      {/* Subtle Disappearing Gesture Hint (Fades out automatically after first drag) */}
-      <div
-        className={`pointer-events-none absolute top-1/2 right-6 sm:right-12 lg:right-16 -translate-y-1/2 z-10 hidden md:flex items-center gap-2.5 transition-opacity duration-700 ${
-          hasInteracted ? 'opacity-0' : 'opacity-75'
-        }`}
-      >
-        <span
-          className={`font-serif italic text-sm ${
-            sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#8C6D46]'
-          }`}
-        >
-          Desliza para girar
-        </span>
-        <span
-          className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs ${
-            sanctuaryDark
-              ? 'border-[#D4B07B]/40 text-[#D4B07B]'
-              : 'border-[#8C6D46]/40 text-[#8C6D46]'
-          }`}
-        >
-          ↔
-        </span>
-      </div>
-
-      {/* Ultra-Minimalist Bottom Bar: Pure Tactile Color Dots (Zero Text Clutter) + Editorial Link */}
-      <div className="absolute bottom-8 left-6 sm:left-12 lg:left-16 right-6 sm:right-12 lg:right-16 z-10 flex flex-col sm:flex-row justify-between items-center sm:items-end gap-5 pointer-events-none">
-        {/* Floating Pill Dock: 3 Tactile Material Spheres + 1 Day/Night Glow Icon */}
-        <div
-          className={`pointer-events-auto inline-flex items-center gap-3.5 px-4 py-2.5 rounded-full border backdrop-blur-md transition-all duration-500 shadow-sm ${
-            sanctuaryDark
-              ? 'bg-[#26211D]/85 border-[#3D352E]'
-              : 'bg-[#FAF7F2]/85 border-[#E5DEC9]'
-          }`}
-        >
-          {(Object.keys(FINISH_PRESETS) as ResinFinishId[]).map((key) => {
-            const preset = FINISH_PRESETS[key];
-            const active = finishId === key;
-            return (
-              <button
-                key={key}
-                type="button"
-                aria-label={preset.hint}
-                title={preset.hint}
-                onClick={() => setFinishId(key)}
-                className={`relative w-6 h-6 rounded-full transition-transform duration-300 flex items-center justify-center ${
-                  active ? 'scale-110' : 'opacity-75 hover:opacity-100 hover:scale-105'
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-8 items-center">
+          {/* Left Editorial Column: Dedicated zone, ZERO overlap with 3D sculpture on any screen */}
+          <div className="lg:col-span-5 pt-14 pb-4 lg:py-20 space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+            <div className="space-y-3 max-w-md">
+              <span
+                className={`eyebrow block transition-colors duration-300 ${
+                  sanctuaryDark ? '!text-[#D4B07B]' : ''
                 }`}
               >
-                <span
-                  className="w-5 h-5 rounded-full block shadow-inner"
-                  style={{
-                    background: preset.swatchGradient,
-                    border: `1px solid ${preset.swatchBorder}`,
-                  }}
+                El Santuario · Luz de 2700K
+              </span>
+              <h2
+                className={`font-serif text-4xl sm:text-5xl font-light leading-[1.12] transition-colors duration-300 ${
+                  sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
+                }`}
+              >
+                El misterio de la vida,{' '}
+                <em
+                  className={`italic font-normal transition-colors duration-300 ${
+                    sanctuaryDark ? 'text-[#DFB882]' : 'text-[#8C6D46]'
+                  }`}
+                >
+                  revelado en luz.
+                </em>
+              </h2>
+              <p
+                className={`text-sm sm:text-[15px] font-light leading-relaxed transition-colors duration-300 ${
+                  sanctuaryDark ? 'text-[#C8BFB5]' : 'text-[#6E665E]'
+                }`}
+              >
+                Al deslizar o girar la pieza, la porcelana sedosa desvela a tu bebé sobre piedra
+                travertino con luz cálida de 2700K.
+              </p>
+            </div>
+
+            {/* Desktop Interactive Dock & CTA tucked cleanly beneath the editorial text */}
+            <div className="hidden lg:flex flex-wrap items-center gap-4 pt-3">
+              {renderControlsDock()}
+              {renderOrderCta()}
+            </div>
+          </div>
+
+          {/* Right / Center Dedicated 3D Stage: Unobstructed Sculpture */}
+          <div
+            className="lg:col-span-7 relative h-[450px] sm:h-[540px] lg:h-[680px] w-full"
+            style={{ touchAction: 'pan-y' }}
+            onPointerDown={() => {
+              if (!hasInteracted) setHasInteracted(true);
+            }}
+          >
+            <Canvas
+              frameloop="demand"
+              dpr={[1, 1.5]}
+              camera={{ position: [0, 0.03, 2.95], fov: 40 }}
+              gl={{
+                antialias: true,
+                alpha: true,
+                powerPreference: 'high-performance',
+                toneMapping: THREE.ACESFilmicToneMapping,
+                toneMappingExposure: 1.04,
+              }}
+              onCreated={({ invalidate }) => {
+                invalidateRef.current = invalidate;
+              }}
+              style={{ touchAction: 'pan-y' }}
+              className="cursor-grab active:cursor-grabbing w-full h-full"
+            >
+              <ambientLight intensity={0.95} color="#fffcf8" />
+              <directionalLight position={[2.5, 3.5, 2.5]} intensity={1.15} color="#fffdfa" />
+
+              <Suspense fallback={<LoaderOverlay />}>
+                <SculptureMeshes
+                  progressRef={progressRef}
+                  finishId={finishId}
+                  warmLightOn={true}
+                  sanctuaryDark={sanctuaryDark}
                 />
-                {active && (
-                  <span
-                    className={`absolute -inset-1 rounded-full border transition-colors ${
-                      sanctuaryDark ? 'border-[#D4B07B]' : 'border-[#8C6D46]'
-                    }`}
-                  />
-                )}
-              </button>
-            );
-          })}
+              </Suspense>
 
-          {/* Hairline Divider */}
-          <span
-            className={`h-4 w-[1px] mx-0.5 ${
-              sanctuaryDark ? 'bg-[#3D352E]' : 'bg-[#E5DEC9]'
-            }`}
-          />
+              <OrbitControls
+                makeDefault
+                enablePan={false}
+                enableZoom={false}
+                enableDamping={true}
+                dampingFactor={0.045}
+                rotateSpeed={0.75}
+                minPolarAngle={Math.PI / 4.2}
+                maxPolarAngle={Math.PI / 1.85}
+                target={[0, -0.02, 0]}
+              />
+            </Canvas>
 
-          {/* Single Intuitive Day / Night 2700K Atmosphere Dot */}
-          <button
-            type="button"
-            onClick={() => setSanctuaryDark((v) => !v)}
-            title={sanctuaryDark ? 'Ver con luz de día' : 'Ver en penumbra nocturna 2700K'}
-            aria-label={sanctuaryDark ? 'Ver con luz de día' : 'Ver en penumbra nocturna 2700K'}
-            className={`inline-flex items-center gap-2 pl-1 pr-2 py-0.5 rounded-full text-[11px] font-serif italic transition-colors ${
-              sanctuaryDark
-                ? 'text-[#FFB866]'
-                : 'text-[#6E665E] hover:text-[#2C2825]'
+            {/* Subtle Disappearing Gesture Hint: Top-right on desktop */}
+            <div
+              className={`pointer-events-none absolute top-8 right-4 z-10 hidden lg:flex items-center gap-2 transition-opacity duration-700 ${
+                hasInteracted ? 'opacity-0' : 'opacity-75'
+              }`}
+            >
+              <span
+                className={`font-serif italic text-sm ${
+                  sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#8C6D46]'
+                }`}
+              >
+                Desliza para girar
+              </span>
+              <span
+                className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs ${
+                  sanctuaryDark
+                    ? 'border-[#D4B07B]/40 text-[#D4B07B]'
+                    : 'border-[#8C6D46]/40 text-[#8C6D46]'
+                }`}
+              >
+                ↔
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile & Tablet Controls Bar: Safely BELOW the 3D stage (Zero overlap) */}
+        <div className="lg:hidden pb-12 pt-1 flex flex-col items-center gap-4">
+          <div
+            className={`pointer-events-none flex items-center gap-2 transition-opacity duration-700 ${
+              hasInteracted ? 'opacity-0 h-0 overflow-hidden' : 'opacity-75'
             }`}
           >
             <span
-              className={`w-3.5 h-3.5 rounded-full transition-all flex items-center justify-center ${
-                sanctuaryDark
-                  ? 'bg-[#FFB866] shadow-[0_0_10px_#FFA84C]'
-                  : 'bg-[#2C2825]'
+              className={`font-serif italic text-xs ${
+                sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#8C6D46]'
               }`}
-            />
-            <span>{sanctuaryDark ? 'Noche' : 'Día'}</span>
-          </button>
+            >
+              Desliza para girar · 360°
+            </span>
+          </div>
+          <div className="w-full flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4">
+            {renderControlsDock()}
+            {renderOrderCta()}
+          </div>
         </div>
-
-        {/* Clean Editorial Link CTA (Matches Bridal Bliss Hero style, not a heavy box) */}
-        <button
-          type="button"
-          onClick={() => openOrderModal()}
-          className={`pointer-events-auto inline-flex items-center gap-3.5 px-5 py-2.5 rounded-full border text-[11px] uppercase tracking-[0.22em] backdrop-blur-md transition-all duration-300 group ${
-            sanctuaryDark
-              ? 'bg-[#26211D]/85 border-[#D4B07B]/50 text-[#FAF7F2] hover:border-[#D4B07B]'
-              : 'bg-[#FAF7F2]/85 border-[#2C2825]/30 text-[#2C2825] hover:border-[#8C6D46] hover:text-[#8C6D46]'
-          }`}
-        >
-          <span>Encargar esta Obra</span>
-          <span className="text-[#8C6D46] group-hover:translate-x-1 transition-transform">
-            →
-          </span>
-        </button>
       </div>
     </section>
   );

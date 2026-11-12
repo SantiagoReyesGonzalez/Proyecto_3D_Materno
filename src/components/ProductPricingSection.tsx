@@ -14,7 +14,7 @@ export const ProductPricingSection: React.FC = () => {
       {/* 4.5. Las Tres Ediciones Conmemorativas (Galería Editorial sobre #F2ECE1) */}
       <section
         id="catalogo-tiers"
-        className="deferred-section bg-[#F2ECE1] py-28 lg:py-36 border-t border-[#E5DEC9]"
+        className="scroll-mt-20 deferred-section bg-[#F2ECE1] py-24 sm:py-28 lg:py-36 border-t border-[#E5DEC9]"
       >
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
           <div className="max-w-xl mx-auto text-center space-y-4 mb-20">
@@ -92,7 +92,7 @@ export const ProductPricingSection: React.FC = () => {
       {/* Whisper-Quiet 3-Step Artisanal Process on #FAF7F2 */}
       <section
         id="proceso"
-        className="deferred-section bg-[#FAF7F2] py-28 lg:py-32 border-t border-[#E5DEC9]"
+        className="scroll-mt-20 deferred-section bg-[#FAF7F2] py-24 sm:py-28 lg:py-32 border-t border-[#E5DEC9]"
       >
         <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-14">
           <div className="max-w-lg mx-auto text-center space-y-3 mb-16">
