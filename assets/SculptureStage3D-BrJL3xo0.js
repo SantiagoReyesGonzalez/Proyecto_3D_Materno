@@ -1,4 +1,4 @@
-import{j as e,C as co,A as mo,r as o,O as vo,u as uo,b as y,d as r,S as f,F as O,L as po,M as fo,e as ho,f as U,H as go,g as p}from"./three-vendor-GJn04exD.js";import{a as h}from"./index-OX9mi4MZ.js";const D="https://www.gstatic.com/draco/versioned/decoders/1.5.7/",K="/Proyecto_3D_Materno/models/Madre.glb",X="/Proyecto_3D_Materno/models/bebe.glb";y.preload(K,D);y.preload(X,D);const wo=`
+import{j as e,C as co,A as mo,r as o,O as vo,u as uo,b as y,d as r,S as f,F as O,L as po,M as fo,e as ho,f as U,H as go,g as p}from"./three-vendor-GJn04exD.js";import{a as h}from"./index--Nq0ul0-.js";const D="https://www.gstatic.com/draco/versioned/decoders/1.5.7/",K="/Proyecto_3D_Materno/models/Madre.glb",X="/Proyecto_3D_Materno/models/bebe.glb";y.preload(K,D);y.preload(X,D);const wo=`
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
