@@ -35,22 +35,22 @@ export const HeroSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Vertical 4:5 Portrait Frame */}
+          {/* Right Vertical 4:5 Portrait Frame — Enfoque 1: De la Ecografía al Abrazo */}
           <div className="lg:col-span-5 lg:col-start-8">
             <figure className="space-y-4">
               <div className="aspect-[4/5] w-full bg-[#F2ECE1] border border-[#E5DEC9] overflow-hidden">
                 <img
-                  src={`${import.meta.env.BASE_URL}images/editorial/hero_editorial_alabaster.jpg`}
-                  alt="Escultura Maternidad 3D en resina óptica sobre piedra travertino con luz cálida"
+                  src={`${import.meta.env.BASE_URL}images/editorial/hero_ultrasound_keepsake.jpg`}
+                  alt="Manos de madre y padre sosteniendo la ecografía prenatal junto a la escultura Maternidad 3D iluminada sobre travertino"
                   fetchPriority="high"
                   decoding="async"
-                  width={800}
-                  height={1000}
+                  width={896}
+                  height={1200}
                   className="w-full h-full object-cover"
                 />
               </div>
               <figcaption className="font-serif italic text-base text-[#6E665E] text-right">
-                Edición Luz de Vida — Resina óptica sobre piedra travertino y luz cálida de 2700K.
+                De la primera ecografía al abrazo tangible — Edición Luz de Vida en travertino y luz cálida de 2700K.
               </figcaption>
             </figure>
           </div>

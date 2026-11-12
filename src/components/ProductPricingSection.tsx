@@ -5,6 +5,7 @@ import {
   formatCOP,
 } from '../data/products';
 import { useProductStore } from '../store/useProductStore';
+import { ExhibitionDetailsSection } from './ExhibitionDetailsSection';
 
 export const ProductPricingSection: React.FC = () => {
   const { openOrderModal } = useProductStore();
@@ -89,10 +90,13 @@ export const ProductPricingSection: React.FC = () => {
         </div>
       </section>
 
-      {/* Whisper-Quiet 3-Step Artisanal Process on #FAF7F2 */}
+      {/* Enfoque 3: Tres Atmósferas y Ritual de Entrega (#FAF7F2) */}
+      <ExhibitionDetailsSection />
+
+      {/* Whisper-Quiet 3-Step Artisanal Process on #F2ECE1 */}
       <section
         id="proceso"
-        className="scroll-mt-20 deferred-section bg-[#FAF7F2] py-24 sm:py-28 lg:py-32 border-t border-[#E5DEC9]"
+        className="scroll-mt-20 deferred-section bg-[#F2ECE1] py-24 sm:py-28 lg:py-32 border-t border-[#E5DEC9]"
       >
         <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-14">
           <div className="max-w-lg mx-auto text-center space-y-3 mb-16">
