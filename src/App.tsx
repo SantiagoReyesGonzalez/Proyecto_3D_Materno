@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { StorySection } from './components/StorySection';
 import { SculptureViewer3D } from './components/SculptureViewer3D';
 import { ProductPricingSection } from './components/ProductPricingSection';
-import { OrderUploaderModal } from './components/OrderUploaderModal';
 import { Footer } from './components/Footer';
+
+const OrderUploaderModal = lazy(() =>
+  import('./components/OrderUploaderModal').then((mod) => ({ default: mod.OrderUploaderModal }))
+);
 
 export function App() {
   return (
@@ -16,7 +19,16 @@ export function App() {
         <StorySection />
         <SculptureViewer3D />
         <ProductPricingSection />
-        <OrderUploaderModal />
+        <Suspense
+          fallback={
+            <section
+              id="pedido-directo"
+              className="bg-[#FAF7F2] py-28 lg:py-36 border-t border-[#E5DEC9] min-h-[720px]"
+            />
+          }
+        >
+          <OrderUploaderModal />
+        </Suspense>
       </main>
       <Footer />
     </div>

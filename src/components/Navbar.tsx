@@ -5,7 +5,7 @@ export const Navbar: React.FC = () => {
   const { openOrderModal } = useProductStore();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-sm border-b border-[#E5DEC9]">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-[#FAF7F2]/95 md:bg-[#FAF7F2]/90 md:backdrop-blur-sm border-b border-[#E5DEC9]">
       <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-14 h-20 flex items-center justify-between gap-4">
         {/* Left: Serif Wordmark */}
         <a
