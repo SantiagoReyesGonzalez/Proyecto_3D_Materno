@@ -262,28 +262,33 @@ export const HowItWorksSection: React.FC = () => {
   return (
     <section
       id="proceso"
-      className="scroll-mt-20 deferred-section overflow-x-clip bg-[#F2ECE1] py-24 sm:py-28 lg:py-36 border-t border-[#E5DEC9]"
+      className="scroll-mt-20 deferred-section overflow-x-clip bg-[#F2ECE1] py-16 sm:py-28 lg:py-36 border-t border-[#E5DEC9]"
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-14">
         {/* Section Editorial Header */}
-        <div className="max-w-2xl mx-auto text-center space-y-4 mb-12">
+        <div className="max-w-2xl mx-auto text-center space-y-3 sm:space-y-4 mb-7 sm:mb-12">
           <span className="eyebrow block">
             Cómo Funcionamos · Paso a Paso
           </span>
-          <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#2C2825] leading-[1.15]">
+          <h2 className="font-serif text-2xl sm:text-5xl font-light text-[#2C2825] leading-[1.15]">
             De tu ecografía 3D a tu hogar,{' '}
             <em className="italic font-normal text-[#8C6D46]">en cuatro pasos simples.</em>
           </h2>
-          <p className="text-base text-[#6E665E] font-light leading-relaxed">
-            Recorre cada etapa en la línea de tiempo interactiva o explora las cuatro tarjetas
-            visuales para conocer cómo transformamos tu ecografía 3D en una escultura familiar.
+          <p className="text-sm sm:text-base text-[#6E665E] font-light leading-relaxed">
+            <span className="sm:hidden">
+              Desliza o toca la línea de tiempo para ver cómo creamos tu escultura.
+            </span>
+            <span className="hidden sm:inline">
+              Recorre cada etapa en la línea de tiempo interactiva o explora las cuatro tarjetas
+              visuales para conocer cómo transformamos tu ecografía 3D en una escultura familiar.
+            </span>
           </p>
         </div>
 
-        {/* Interactive Process Timeline + Compact Playback Strip */}
-        <div className="max-w-5xl mx-auto mb-10">
+        {/* Interactive Process Timeline Utility Strip */}
+        <div className="max-w-5xl mx-auto">
           {/* Single-line subtle utility header */}
-          <div className="flex items-center justify-between gap-2 sm:gap-4 pb-4 mb-6 border-b border-[#E5DEC9]">
+          <div className="flex items-center justify-between gap-2 sm:gap-4 pb-3 sm:pb-4 mb-3 sm:mb-6 border-b border-[#E5DEC9]">
             <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#755936] font-medium whitespace-nowrap shrink-0">
               <span className="sm:hidden">4 etapas</span>
               <span className="hidden sm:inline">Línea de tiempo · 4 etapas del encargo</span>
@@ -332,7 +337,10 @@ export const HowItWorksSection: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Sticky on Mobile/Tablet so steps 01–04 stay reachable while reading; static on Desktop */}
+        <div className="max-w-5xl mx-auto sticky top-20 z-30 bg-[#F2ECE1]/95 backdrop-blur-sm border-b border-[#E5DEC9]/80 -mx-4 px-4 py-2.5 mb-5 sm:-mx-10 sm:px-10 lg:static lg:bg-transparent lg:backdrop-blur-none lg:border-b-0 lg:mx-auto lg:px-0 lg:py-0 lg:mb-10">
           {/* Horizontal Connected Milestone Rail (supports tap & left/right finger swipe) */}
           <div
             role="tablist"
@@ -343,7 +351,7 @@ export const HowItWorksSection: React.FC = () => {
             {/* Track connecting node centers (12.5% to 87.5%) */}
             <div
               aria-hidden="true"
-              className="absolute top-4 sm:top-5 -translate-y-1/2 left-[12.5%] right-[12.5%] h-[1px] bg-[#D8CEBE]"
+              className="absolute top-3.5 sm:top-5 -translate-y-1/2 left-[12.5%] right-[12.5%] h-[1px] bg-[#D8CEBE]"
             >
               <div
                 className="h-[2px] -mt-[0.5px] bg-[#8C6D46] transition-all duration-500 ease-out"
@@ -368,7 +376,7 @@ export const HowItWorksSection: React.FC = () => {
                   className="group relative flex flex-col items-center text-center px-1 sm:px-3 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#8C6D46] rounded-sm"
                 >
                   <span
-                    className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-serif text-xs sm:text-sm transition-all duration-300 border ${
+                    className={`relative z-10 w-7 h-7 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-serif text-[11px] sm:text-sm transition-all duration-300 border ${
                       isSelected
                         ? 'bg-[#2C2825] text-[#FAF7F2] border-[#2C2825] ring-4 ring-[#8C6D46]/20 scale-105'
                         : isCompleted
@@ -380,7 +388,7 @@ export const HowItWorksSection: React.FC = () => {
                   </span>
 
                   <span
-                    className={`mt-3 block text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] transition-colors leading-snug ${
+                    className={`mt-1.5 sm:mt-3 block text-[10px] sm:text-[11px] uppercase tracking-[0.1em] sm:tracking-[0.16em] transition-colors leading-tight ${
                       isSelected
                         ? 'text-[#2C2825] font-semibold'
                         : isCompleted
@@ -403,10 +411,6 @@ export const HowItWorksSection: React.FC = () => {
               );
             })}
           </div>
-
-          <p className="sm:hidden mt-3.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#755936]">
-            Desliza con el dedo ↔ para recorrer las etapas
-          </p>
         </div>
 
         {/* Main Featured Carousel Stage (Split Editorial Viewer with Touch Swipe + Arrow Key Navigation) */}
@@ -427,7 +431,7 @@ export const HowItWorksSection: React.FC = () => {
         >
           {/* Left 7 Columns: Editorial Photograph with Contextual Badge */}
           <div className="lg:col-span-7 relative bg-[#E5DEC9]/30 border-b lg:border-b-0 lg:border-r border-[#E5DEC9] flex flex-col">
-            <div className="aspect-[4/3] lg:aspect-auto lg:h-full w-full overflow-hidden relative">
+            <div className="aspect-[16/10] sm:aspect-[4/3] lg:aspect-auto lg:h-full w-full overflow-hidden relative">
               <img
                 src={activeStep.image}
                 alt={activeStep.alt}
@@ -440,10 +444,30 @@ export const HowItWorksSection: React.FC = () => {
               />
 
               {/* Top-left subtle step badge */}
-              <div className="absolute top-4 left-4 bg-[#FAF7F2]/95 border border-[#E5DEC9] px-3.5 py-1.5">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#2C2825] font-medium">
+              <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#FAF7F2]/95 border border-[#E5DEC9] px-2.5 py-1 sm:px-3.5 sm:py-1.5">
+                <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#2C2825] font-medium">
                   {activeStep.eyebrow}
                 </span>
+              </div>
+
+              {/* Mobile/Tablet Quick Photo Prev & Next Touch Buttons */}
+              <div className="lg:hidden absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Etapa anterior"
+                  className="pointer-events-auto w-8 h-8 rounded-full bg-[#FAF7F2]/90 border border-[#E5DEC9] text-[#2C2825] flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Siguiente etapa"
+                  className="pointer-events-auto w-8 h-8 rounded-full bg-[#FAF7F2]/90 border border-[#E5DEC9] text-[#2C2825] flex items-center justify-center shadow-sm active:scale-95 transition-transform"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
 
               {/* Desktop contextual overlay bar along bottom edge (on mobile flows below so photo is 100% uncovered) */}
@@ -454,39 +478,40 @@ export const HowItWorksSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="sm:hidden bg-[#2C2825] text-[#FAF7F2] px-4 py-3">
-              <p className="text-xs font-light leading-snug">
+            <div className="sm:hidden bg-[#2C2825] text-[#FAF7F2] px-4 py-2">
+              <p className="text-[11px] font-light leading-snug">
                 {activeStep.overlayBadge}
               </p>
             </div>
           </div>
 
           {/* Right 5 Columns: Active Step Detailed Explanation */}
-          <div className="lg:col-span-5 p-7 sm:p-10 lg:p-11 flex flex-col justify-between space-y-8">
-            <div className="space-y-5">
-              <div className="flex items-baseline justify-between gap-4">
-                <span className="font-serif italic text-4xl sm:text-5xl text-[#8C6D46]">
+          <div className="lg:col-span-5 p-4 sm:p-10 lg:p-11 flex flex-col justify-between space-y-4 sm:space-y-8">
+            <div className="space-y-2.5 sm:space-y-5">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-serif italic text-3xl sm:text-5xl text-[#8C6D46]">
                   {activeStep.number}
                 </span>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-[#8C6D46]">
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#755936] font-medium">
                   {activeStep.footerTag}
                 </span>
               </div>
 
-              <h3 className="font-serif text-3xl sm:text-4xl font-light text-[#2C2825] leading-tight">
+              <h3 className="font-serif text-2xl sm:text-4xl font-light text-[#2C2825] leading-tight">
                 {activeStep.title}
               </h3>
 
-              <p className="text-sm sm:text-[15px] text-[#6E665E] font-light leading-relaxed">
-                {activeStep.description}
+              <p className="text-[13px] sm:text-[15px] text-[#6E665E] font-light leading-relaxed">
+                <span className="sm:hidden">{activeStep.cardSummary}</span>
+                <span className="hidden sm:inline">{activeStep.description}</span>
               </p>
 
               {/* Key Structured Highlights for the Active Step */}
-              <div className="pt-3 space-y-2.5 border-t border-[#E5DEC9]">
+              <div className="pt-2.5 sm:pt-3 space-y-1.5 sm:space-y-2.5 border-t border-[#E5DEC9]">
                 {activeStep.highlights.map((item) => (
                   <div
                     key={item.label}
-                    className={`p-3 border text-xs ${
+                    className={`p-2 sm:p-3 border text-[11px] sm:text-xs leading-snug ${
                       item.isWarning
                         ? 'bg-[#F2ECE1]/80 border-[#8C6D46]/60 text-[#2C2825]'
                         : 'bg-[#F2ECE1]/40 border-[#E5DEC9] text-[#2C2825]'
@@ -500,16 +525,16 @@ export const HowItWorksSection: React.FC = () => {
             </div>
 
             {/* Bottom Stepper Controls inside Card */}
-            <div className="pt-4 border-t border-[#E5DEC9] flex items-center justify-between gap-4">
+            <div className="pt-3 sm:pt-4 border-t border-[#E5DEC9] flex items-center justify-between gap-2 sm:gap-4">
               <button
                 type="button"
                 onClick={handlePrev}
-                className="text-[11px] uppercase tracking-[0.2em] text-[#6E665E] hover:text-[#2C2825] transition-colors"
+                className="py-1.5 px-1 text-[10px] sm:text-[11px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#6E665E] hover:text-[#2C2825] transition-colors whitespace-nowrap"
               >
                 ← Anterior
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 {PROCESS_STEPS.map((s, idx) => (
                   <button
                     key={s.id}
@@ -517,7 +542,7 @@ export const HowItWorksSection: React.FC = () => {
                     aria-label={`Ir al paso ${idx + 1}`}
                     onClick={() => handleSelectStep(idx)}
                     className={`h-1.5 transition-all ${
-                      idx === activeIndex ? 'w-7 bg-[#8C6D46]' : 'w-2 bg-[#E5DEC9] hover:bg-[#8C6D46]/50'
+                      idx === activeIndex ? 'w-6 sm:w-7 bg-[#8C6D46]' : 'w-2 bg-[#E5DEC9] hover:bg-[#8C6D46]/50'
                     }`}
                   />
                 ))}
@@ -526,7 +551,7 @@ export const HowItWorksSection: React.FC = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="text-[11px] uppercase tracking-[0.2em] text-[#2C2825] hover:text-[#8C6D46] transition-colors font-medium"
+                className="py-1.5 px-1 text-[10px] sm:text-[11px] uppercase tracking-[0.16em] sm:tracking-[0.2em] text-[#2C2825] hover:text-[#8C6D46] transition-colors font-medium whitespace-nowrap"
               >
                 Siguiente →
               </button>
@@ -534,8 +559,8 @@ export const HowItWorksSection: React.FC = () => {
           </div>
         </div>
 
-        {/* 4-Card Visual Overview Grid (All 4 Steps + Images Visible Simultaneously) */}
-        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
+        {/* 4-Card Visual Overview Grid (Tablet/Desktop only; on mobile keeps view focused and compact) */}
+        <div className="hidden sm:grid mt-10 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7">
           {PROCESS_STEPS.map((step, idx) => {
             const isActive = idx === activeIndex;
             return (
@@ -596,8 +621,8 @@ export const HowItWorksSection: React.FC = () => {
         </div>
 
         {/* Bottom Pricing & Delivery Timeframe Strip */}
-        <div className="mt-10 bg-[#FAF7F2] border border-[#E5DEC9] px-6 py-6 sm:px-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 flex-1">
+        <div className="mt-6 sm:mt-10 bg-[#FAF7F2] border border-[#E5DEC9] px-4 py-4 sm:px-8 sm:py-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-6 flex-1">
             {PRODUCT_TIERS.map((tier) => (
               <div key={tier.id} className="space-y-0.5">
                 <span className="text-xs uppercase tracking-[0.16em] text-[#8C6D46] block">
