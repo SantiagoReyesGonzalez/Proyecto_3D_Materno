@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { PRODUCT_TIERS, formatCOP } from '../data/products';
 import { useProductStore } from '../store/useProductStore';
 
 interface ProcessStep {
   id: number;
   number: string;
+  stepCode: string;
   shortTab: string;
+  mobileLabel: string;
+  timelineNote: string;
   eyebrow: string;
   title: string;
   description: string;
@@ -22,7 +25,10 @@ const PROCESS_STEPS: ProcessStep[] = [
   {
     id: 0,
     number: '01.',
-    shortTab: '01 · Elige versión',
+    stepCode: '01',
+    shortTab: 'Elige versión',
+    mobileLabel: 'Versión',
+    timelineNote: '3 ediciones',
     eyebrow: 'Paso 01 de 04 · Elección de Obra',
     title: 'Decides qué versión quieres',
     description:
@@ -42,7 +48,10 @@ const PROCESS_STEPS: ProcessStep[] = [
   {
     id: 1,
     number: '02.',
-    shortTab: '02 · Ecografía 3D',
+    stepCode: '02',
+    shortTab: 'Ecografía 3D',
+    mobileLabel: 'Eco 3D',
+    timelineNote: 'Solo 3D · No 2D',
     eyebrow: 'Paso 02 de 04 · Requisito Indispensable',
     title: 'Nos adjuntas fotos de tu ecografía 3D',
     description:
@@ -65,7 +74,10 @@ const PROCESS_STEPS: ProcessStep[] = [
   {
     id: 2,
     number: '03.',
-    shortTab: '03 · Fotos de la mamá',
+    stepCode: '03',
+    shortTab: 'Fotos de la mamá',
+    mobileLabel: 'Mamá',
+    timelineNote: 'Solo Ed. Total',
     eyebrow: 'Paso 03 de 04 · Exclusivo Edición Premium',
     title: 'Fotos de la mamá en la edición premium',
     description:
@@ -85,7 +97,10 @@ const PROCESS_STEPS: ProcessStep[] = [
   {
     id: 3,
     number: '04.',
-    shortTab: '04 · Pago y entrega',
+    stepCode: '04',
+    shortTab: 'Pago y entrega',
+    mobileLabel: 'Entrega',
+    timelineNote: '3–10 días hábiles',
     eyebrow: 'Paso 04 de 04 · Confirmación y Envío',
     title: 'Confirmas el valor, pagas y recibes en casa',
     description:
@@ -141,7 +156,7 @@ export const HowItWorksSection: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
         {/* Section Editorial Header */}
-        <div className="max-w-2xl mx-auto text-center space-y-4 mb-14">
+        <div className="max-w-2xl mx-auto text-center space-y-4 mb-12">
           <span className="eyebrow block">
             Cómo Funcionamos · Paso a Paso
           </span>
@@ -150,16 +165,84 @@ export const HowItWorksSection: React.FC = () => {
             <em className="italic font-normal text-[#8C6D46]">en cuatro pasos simples.</em>
           </h2>
           <p className="text-base text-[#6E665E] font-light leading-relaxed">
-            Recorre cada etapa en nuestro carrusel interactivo o explora las cuatro tarjetas
+            Recorre cada etapa en la línea de tiempo interactiva o explora las cuatro tarjetas
             visuales para conocer cómo transformamos tu ecografía 3D en una escultura familiar.
           </p>
         </div>
 
-        {/* Step Selector Pills + Carousel Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E5DEC9]">
-          <div className="flex flex-wrap gap-2" role="tablist" aria-label="Pasos de cómo funcionamos">
+        {/* Interactive Process Timeline + Compact Playback Strip */}
+        <div className="max-w-5xl mx-auto mb-10">
+          {/* Single-line subtle utility header */}
+          <div className="flex items-center justify-between gap-4 pb-4 mb-6 border-b border-[#E5DEC9]">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#755936] font-medium">
+              <span className="sm:hidden">4 etapas</span>
+              <span className="hidden sm:inline">Línea de tiempo · 4 etapas del encargo</span>
+            </span>
+
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsAutoPlaying((prev) => !prev)}
+                className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] transition-colors ${
+                  isAutoPlaying
+                    ? 'text-[#755936] font-medium'
+                    : 'text-[#6E665E] hover:text-[#2C2825]'
+                }`}
+              >
+                {isAutoPlaying ? (
+                  <Pause className="w-3 h-3" aria-hidden="true" />
+                ) : (
+                  <Play className="w-3 h-3" aria-hidden="true" />
+                )}
+                <span>{isAutoPlaying ? 'Pausar' : 'Auto-recorrer'}</span>
+              </button>
+
+              <span className="h-3.5 w-[1px] bg-[#D8CEBE]" aria-hidden="true" />
+
+              <div className="inline-flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  aria-label="Paso anterior"
+                  className="p-1.5 text-[#6E665E] hover:text-[#2C2825] transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="px-1 font-serif italic text-sm text-[#6E665E] select-none tabular-nums">
+                  0{activeIndex + 1} / 04
+                </span>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  aria-label="Siguiente paso"
+                  className="p-1.5 text-[#6E665E] hover:text-[#2C2825] transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Horizontal Connected Milestone Rail */}
+          <div
+            role="tablist"
+            aria-label="Línea de tiempo de cómo funcionamos"
+            className="relative grid grid-cols-4 items-start"
+          >
+            {/* Track connecting node centers (12.5% to 87.5%) */}
+            <div
+              aria-hidden="true"
+              className="absolute top-4 sm:top-5 -translate-y-1/2 left-[12.5%] right-[12.5%] h-[1px] bg-[#D8CEBE]"
+            >
+              <div
+                className="h-[2px] -mt-[0.5px] bg-[#8C6D46] transition-all duration-500 ease-out"
+                style={{ width: `${(activeIndex / (PROCESS_STEPS.length - 1)) * 100}%` }}
+              />
+            </div>
+
             {PROCESS_STEPS.map((step, idx) => {
               const isSelected = idx === activeIndex;
+              const isCompleted = idx < activeIndex;
               return (
                 <button
                   key={step.id}
@@ -167,48 +250,47 @@ export const HowItWorksSection: React.FC = () => {
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => handleSelectStep(idx)}
-                  className={`px-4 py-2 text-[11px] uppercase tracking-[0.18em] border transition-colors ${
-                    isSelected
-                      ? 'bg-[#2C2825] text-[#FAF7F2] border-[#2C2825]'
-                      : 'bg-[#FAF7F2] text-[#6E665E] border-[#E5DEC9] hover:border-[#8C6D46] hover:text-[#2C2825]'
-                  }`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft') handlePrev();
+                    if (e.key === 'ArrowRight') handleNext();
+                  }}
+                  className="group relative flex flex-col items-center text-center px-1 sm:px-3 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#8C6D46] rounded-sm"
                 >
-                  {step.shortTab}
+                  <span
+                    className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-serif text-xs sm:text-sm transition-all duration-300 border ${
+                      isSelected
+                        ? 'bg-[#2C2825] text-[#FAF7F2] border-[#2C2825] ring-4 ring-[#8C6D46]/20 scale-105'
+                        : isCompleted
+                          ? 'bg-[#8C6D46] text-[#FAF7F2] border-[#8C6D46] group-hover:bg-[#755936]'
+                          : 'bg-[#F2ECE1] text-[#6E665E] border-[#CFC4B2] group-hover:border-[#8C6D46] group-hover:text-[#2C2825] group-hover:bg-[#FAF7F2]'
+                    }`}
+                  >
+                    {step.stepCode}
+                  </span>
+
+                  <span
+                    className={`mt-3 block text-[10px] sm:text-[11px] uppercase tracking-[0.12em] sm:tracking-[0.16em] transition-colors leading-snug ${
+                      isSelected
+                        ? 'text-[#2C2825] font-semibold'
+                        : isCompleted
+                          ? 'text-[#755936] font-medium'
+                          : 'text-[#6E665E] group-hover:text-[#2C2825]'
+                    }`}
+                  >
+                    <span className="sm:hidden">{step.mobileLabel}</span>
+                    <span className="hidden sm:inline">{step.shortTab}</span>
+                  </span>
+
+                  <span
+                    className={`hidden sm:block mt-1 font-serif italic text-xs transition-colors ${
+                      isSelected ? 'text-[#755936]' : 'text-[#6E665E]'
+                    }`}
+                  >
+                    {step.timelineNote}
+                  </span>
                 </button>
               );
             })}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsAutoPlaying((prev) => !prev)}
-              className="px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[#6E665E] hover:text-[#2C2825] border border-[#E5DEC9] bg-[#FAF7F2] transition-colors"
-            >
-              {isAutoPlaying ? 'Pausar carrusel' : 'Auto-recorrer'}
-            </button>
-
-            <div className="inline-flex items-center border border-[#E5DEC9] bg-[#FAF7F2]">
-              <button
-                type="button"
-                onClick={handlePrev}
-                aria-label="Paso anterior"
-                className="p-2.5 text-[#2C2825] hover:bg-[#F2ECE1] transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="px-3 font-serif italic text-sm text-[#6E665E] select-none">
-                0{activeIndex + 1} / 04
-              </span>
-              <button
-                type="button"
-                onClick={handleNext}
-                aria-label="Siguiente paso"
-                className="p-2.5 text-[#2C2825] hover:bg-[#F2ECE1] transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </div>
 
