@@ -90,7 +90,7 @@ export const FINISH_OPTIONS: FinishOption[] = [
     name: 'Cristal Ahumado',
     subtitle: 'Resina óptica traslúcida',
     swatchColor: '#3A3633',
-    previewImage: '/images/00_Imagen_Referencia_Principal.png',
+    previewImage: `${import.meta.env.BASE_URL}images/00_Imagen_Referencia_Principal.png`,
     materialConfig: {
       color: '#2a2d34',
       transmission: 0.88,
@@ -107,7 +107,7 @@ export const FINISH_OPTIONS: FinishOption[] = [
     name: 'Esmerilado Seda',
     subtitle: 'Difusión suave de luz',
     swatchColor: '#CFC8BC',
-    previewImage: '/images/01_Prototipo_Resina_Traslucida_Frontal.png',
+    previewImage: `${import.meta.env.BASE_URL}images/01_Prototipo_Resina_Traslucida_Frontal.png`,
     materialConfig: {
       color: '#8c857b',
       transmission: 0.84,
@@ -124,7 +124,7 @@ export const FINISH_OPTIONS: FinishOption[] = [
     name: 'Bronce',
     subtitle: 'Pátina clásica de galería',
     swatchColor: '#8C6D46',
-    previewImage: '/images/05_Variacion_Bronce_Escultorico_Patinado.png',
+    previewImage: `${import.meta.env.BASE_URL}images/05_Variacion_Bronce_Escultorico_Patinado.png`,
     materialConfig: {
       color: '#785124',
       transmission: 0.38,
@@ -139,9 +139,9 @@ export const FINISH_OPTIONS: FinishOption[] = [
 ];
 
 export const EDITION_PORTRAIT_IMAGES: Record<1 | 2 | 3, string> = {
-  1: '/images/editorial/edition_1_esencia.jpg',
-  2: '/images/editorial/edition_2_luz_de_vida.jpg',
-  3: '/images/editorial/edition_3_maternidad_total.jpg',
+  1: `${import.meta.env.BASE_URL}images/editorial/edition_1_esencia.jpg`,
+  2: `${import.meta.env.BASE_URL}images/editorial/edition_2_luz_de_vida.jpg`,
+  3: `${import.meta.env.BASE_URL}images/editorial/edition_3_maternidad_total.jpg`,
 };
 
 export const formatCOP = (value: number): string => {

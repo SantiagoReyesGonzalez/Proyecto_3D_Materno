@@ -40,7 +40,7 @@ export const HeroSection: React.FC = () => {
             <figure className="space-y-4">
               <div className="aspect-[4/5] w-full bg-[#F2ECE1] border border-[#E5DEC9] overflow-hidden">
                 <img
-                  src="/images/editorial/hero_editorial_alabaster.jpg"
+                  src={`${import.meta.env.BASE_URL}images/editorial/hero_editorial_alabaster.jpg`}
                   alt="Escultura Maternidad 3D en resina óptica sobre piedra travertino con luz cálida"
                   decoding="async"
                   width={800}

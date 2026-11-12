@@ -5,9 +5,11 @@ import * as THREE from 'three';
 import { useProductStore } from '../store/useProductStore';
 
 const DRACO_URL = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/';
+const MADRE_MODEL_URL = `${import.meta.env.BASE_URL}models/Madre.glb`;
+const BEBE_MODEL_URL = `${import.meta.env.BASE_URL}models/bebe.glb`;
 
-useGLTF.preload('/models/Madre.glb', DRACO_URL);
-useGLTF.preload('/models/bebe.glb', DRACO_URL);
+useGLTF.preload(MADRE_MODEL_URL, DRACO_URL);
+useGLTF.preload(BEBE_MODEL_URL, DRACO_URL);
 
 export type ResinFinishId = 'porcelain_silk' | 'champagne_quartz' | 'honey_amber';
 
@@ -500,8 +502,8 @@ const SculptureMeshes: React.FC<SculptureSceneProps> = ({
   sanctuaryDark,
 }) => {
   const { gl, scene, camera, invalidate } = useThree();
-  const madreGltf = useGLTF('/models/Madre.glb', DRACO_URL);
-  const bebeGltf = useGLTF('/models/bebe.glb', DRACO_URL);
+  const madreGltf = useGLTF(MADRE_MODEL_URL, DRACO_URL);
+  const bebeGltf = useGLTF(BEBE_MODEL_URL, DRACO_URL);
 
   const groupRef = useRef<THREE.Group>(null);
 

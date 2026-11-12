@@ -29,7 +29,7 @@ export const StorySection: React.FC = () => {
           <figure className="md:col-span-6 space-y-4">
             <div className="aspect-[4/5] w-full bg-[#FAF7F2] border border-[#E5DEC9] overflow-hidden">
               <img
-                src="/images/editorial/atelier_craft_hands.jpg"
+                src={`${import.meta.env.BASE_URL}images/editorial/atelier_craft_hands.jpg`}
                 alt="Manos del escultor en el taller de Bogotá sosteniendo la obra Maternidad 3D"
                 loading="lazy"
                 decoding="async"
@@ -46,7 +46,7 @@ export const StorySection: React.FC = () => {
           <figure className="md:col-span-5 md:col-start-8 md:mt-20 space-y-4">
             <div className="aspect-[4/5] w-full bg-[#FAF7F2] border border-[#E5DEC9] overflow-hidden">
               <img
-                src="/images/editorial/nursery_warm_glow.jpg"
+                src={`${import.meta.env.BASE_URL}images/editorial/nursery_warm_glow.jpg`}
                 alt="Escultura Maternidad 3D iluminada con luz cálida de 2700K en la habitación del bebé"
                 loading="lazy"
                 decoding="async"
