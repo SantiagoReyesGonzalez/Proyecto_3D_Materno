@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { PRODUCT_TIERS, formatCOP } from '../data/products';
 import { useProductStore } from '../store/useProductStore';
@@ -123,6 +123,14 @@ export const HowItWorksSection: React.FC = () => {
   const { openOrderModal } = useProductStore();
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(false);
+  const [dragOffset, setDragOffset] = useState<number>(0);
+  const swipeStartRef = useRef<{
+    source: 'touch' | 'pointer';
+    x: number;
+    y: number;
+    intent: 'pending' | 'horizontal' | 'vertical';
+  } | null>(null);
+  const suppressClickUntilRef = useRef<number>(0);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -145,14 +153,116 @@ export const HowItWorksSection: React.FC = () => {
   };
 
   const handleSelectStep = (idx: number) => {
+    if (Date.now() < suppressClickUntilRef.current) return;
     setIsAutoPlaying(false);
     setActiveIndex(idx);
   };
 
+  const beginSwipe = (source: 'touch' | 'pointer', clientX: number, clientY: number) => {
+    if (swipeStartRef.current) return;
+    swipeStartRef.current = { source, x: clientX, y: clientY, intent: 'pending' };
+  };
+
+  const moveSwipe = (source: 'touch' | 'pointer', clientX: number, clientY: number, visualFeedback = false) => {
+    const start = swipeStartRef.current;
+    if (!start || start.source !== source) return;
+
+    const deltaX = clientX - start.x;
+    const deltaY = clientY - start.y;
+
+    if (start.intent === 'pending') {
+      if (Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) return;
+      if (Math.abs(deltaX) > Math.abs(deltaY) * 1.15) {
+        start.intent = 'horizontal';
+      } else {
+        start.intent = 'vertical';
+        if (visualFeedback) setDragOffset(0);
+        return;
+      }
+    }
+
+    if (start.intent === 'horizontal' && visualFeedback) {
+      const clamped = Math.max(-72, Math.min(72, deltaX * 0.45));
+      setDragOffset(clamped);
+    }
+  };
+
+  const endSwipe = (source: 'touch' | 'pointer', clientX: number, clientY: number) => {
+    const start = swipeStartRef.current;
+    if (!start || start.source !== source) return;
+
+    const deltaX = clientX - start.x;
+    const deltaY = clientY - start.y;
+    const isHorizontalGesture =
+      start.intent === 'horizontal' ||
+      (start.intent === 'pending' && Math.abs(deltaX) >= 36 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15);
+
+    swipeStartRef.current = null;
+    setDragOffset(0);
+
+    if (isHorizontalGesture && Math.abs(deltaX) >= 36) {
+      suppressClickUntilRef.current = Date.now() + 350;
+      if (deltaX < 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+  };
+
+  const cancelSwipe = (source: 'touch' | 'pointer') => {
+    if (swipeStartRef.current?.source === source) {
+      swipeStartRef.current = null;
+      setDragOffset(0);
+    }
+  };
+
+  const getSwipeProps = (visualFeedback = false) => ({
+    onTouchStart: (e: React.TouchEvent) => {
+      if (e.touches.length === 1) {
+        beginSwipe('touch', e.touches[0].clientX, e.touches[0].clientY);
+      }
+    },
+    onTouchMove: (e: React.TouchEvent) => {
+      if (e.touches.length === 1) {
+        moveSwipe('touch', e.touches[0].clientX, e.touches[0].clientY, visualFeedback);
+      }
+    },
+    onTouchEnd: (e: React.TouchEvent) => {
+      const touch = e.changedTouches[0];
+      if (touch) {
+        endSwipe('touch', touch.clientX, touch.clientY);
+      } else {
+        cancelSwipe('touch');
+      }
+    },
+    onTouchCancel: () => cancelSwipe('touch'),
+    onPointerDown: (e: React.PointerEvent) => {
+      if (e.pointerType !== 'mouse') {
+        beginSwipe('pointer', e.clientX, e.clientY);
+      }
+    },
+    onPointerMove: (e: React.PointerEvent) => {
+      if (e.pointerType !== 'mouse') {
+        moveSwipe('pointer', e.clientX, e.clientY, visualFeedback);
+      }
+    },
+    onPointerUp: (e: React.PointerEvent) => {
+      if (e.pointerType !== 'mouse') {
+        endSwipe('pointer', e.clientX, e.clientY);
+      }
+    },
+    onPointerCancel: (e: React.PointerEvent) => {
+      if (e.pointerType !== 'mouse') {
+        cancelSwipe('pointer');
+      }
+    },
+  });
+
   return (
     <section
       id="proceso"
-      className="scroll-mt-20 deferred-section bg-[#F2ECE1] py-24 sm:py-28 lg:py-36 border-t border-[#E5DEC9]"
+      className="scroll-mt-20 deferred-section overflow-x-clip bg-[#F2ECE1] py-24 sm:py-28 lg:py-36 border-t border-[#E5DEC9]"
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
         {/* Section Editorial Header */}
@@ -173,17 +283,17 @@ export const HowItWorksSection: React.FC = () => {
         {/* Interactive Process Timeline + Compact Playback Strip */}
         <div className="max-w-5xl mx-auto mb-10">
           {/* Single-line subtle utility header */}
-          <div className="flex items-center justify-between gap-4 pb-4 mb-6 border-b border-[#E5DEC9]">
-            <span className="text-[11px] uppercase tracking-[0.2em] text-[#755936] font-medium">
+          <div className="flex items-center justify-between gap-2 sm:gap-4 pb-4 mb-6 border-b border-[#E5DEC9]">
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.2em] text-[#755936] font-medium whitespace-nowrap shrink-0">
               <span className="sm:hidden">4 etapas</span>
               <span className="hidden sm:inline">Línea de tiempo · 4 etapas del encargo</span>
             </span>
 
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsAutoPlaying((prev) => !prev)}
-                className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] transition-colors ${
+                className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] sm:tracking-[0.18em] transition-colors whitespace-nowrap ${
                   isAutoPlaying
                     ? 'text-[#755936] font-medium'
                     : 'text-[#6E665E] hover:text-[#2C2825]'
@@ -223,11 +333,12 @@ export const HowItWorksSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Horizontal Connected Milestone Rail */}
+          {/* Horizontal Connected Milestone Rail (supports tap & left/right finger swipe) */}
           <div
             role="tablist"
             aria-label="Línea de tiempo de cómo funcionamos"
-            className="relative grid grid-cols-4 items-start"
+            {...getSwipeProps(false)}
+            className="relative grid grid-cols-4 items-start touch-pan-y select-none"
           >
             {/* Track connecting node centers (12.5% to 87.5%) */}
             <div
@@ -292,16 +403,27 @@ export const HowItWorksSection: React.FC = () => {
               );
             })}
           </div>
+
+          <p className="sm:hidden mt-3.5 text-center text-[10px] uppercase tracking-[0.16em] text-[#755936]">
+            Desliza con el dedo ↔ para recorrer las etapas
+          </p>
         </div>
 
-        {/* Main Featured Carousel Stage (Split Editorial Viewer with Arrow Key Navigation) */}
+        {/* Main Featured Carousel Stage (Split Editorial Viewer with Touch Swipe + Arrow Key Navigation) */}
         <div
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'ArrowLeft') handlePrev();
             if (e.key === 'ArrowRight') handleNext();
           }}
-          className="bg-[#FAF7F2] border border-[#E5DEC9] grid grid-cols-1 lg:grid-cols-12 overflow-hidden focus:outline-none focus:ring-1 focus:ring-[#8C6D46]"
+          {...getSwipeProps(true)}
+          style={{
+            transform: `translate3d(${dragOffset}px, 0, 0)`,
+            opacity: dragOffset === 0 ? 1 : Math.max(0.88, 1 - Math.abs(dragOffset) / 420),
+          }}
+          className={`bg-[#FAF7F2] border border-[#E5DEC9] grid grid-cols-1 lg:grid-cols-12 overflow-hidden touch-pan-y focus:outline-none focus:ring-1 focus:ring-[#8C6D46] ${
+            dragOffset === 0 ? 'transition-[transform,opacity] duration-300 ease-out' : 'transition-none'
+          }`}
         >
           {/* Left 7 Columns: Editorial Photograph with Contextual Badge */}
           <div className="lg:col-span-7 relative bg-[#E5DEC9]/30 border-b lg:border-b-0 lg:border-r border-[#E5DEC9] flex flex-col">
@@ -311,9 +433,10 @@ export const HowItWorksSection: React.FC = () => {
                 alt={activeStep.alt}
                 loading="lazy"
                 decoding="async"
+                draggable={false}
                 width={1000}
                 height={750}
-                className="w-full h-full object-cover transition-opacity duration-300"
+                className="w-full h-full object-cover select-none transition-opacity duration-300"
               />
 
               {/* Top-left subtle step badge */}
