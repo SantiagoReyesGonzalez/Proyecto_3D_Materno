@@ -27,7 +27,7 @@ export const Navbar: React.FC = () => {
             Colección
           </a>
           <a href="#proceso" className="hover:text-[#2C2825] transition-colors whitespace-nowrap">
-            Proceso
+            Cómo Funciona
           </a>
         </nav>
 

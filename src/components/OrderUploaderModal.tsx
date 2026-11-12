@@ -32,6 +32,8 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
     setVacaParticipants,
     uploadedFetusFile,
     setUploadedFetusFile,
+    uploadedMotherPhotos,
+    setUploadedMotherPhotos,
     customerData,
     updateCustomerData,
     getEffectivePrice,
@@ -40,6 +42,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [copiedVaca, setCopiedVaca] = useState(false);
   const fetusInputRef = useRef<HTMLInputElement>(null);
+  const motherInputRef = useRef<HTMLInputElement>(null);
 
   const currentTier = PRODUCT_TIERS.find((t) => t.id === selectedTier) || PRODUCT_TIERS[1];
   const currentFinish = FINISH_OPTIONS.find((f) => f.id === activeFinish) || FINISH_OPTIONS[0];
@@ -70,6 +73,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
       `• Edición: ${currentTier.name}\n` +
       `• Material: ${currentFinish.name}\n` +
       `• Modalidad: ${modalityLabel}\n` +
+      `• Entrega estimada: ${currentTier.deliveryDays} hábiles\n` +
       `• Nombre: ${customerData.motherName}\n` +
       `• Bebé: ${customerData.babyName} (Semana ${customerData.weeks})\n` +
       `• Ciudad: ${customerData.city}`;
@@ -203,7 +207,12 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
 
           {/* Drag & Drop Ultrasound */}
           <div>
-            <span className="eyebrow block mb-3">02 · Fotografía o Video de Ecografía 3D</span>
+            <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+              <span className="eyebrow block">02 · Ecografía 3D únicamente</span>
+              <span className="text-[11px] text-[#8C6D46] font-medium">
+                Solo 3D / 4D · No sirven ecografías 2D
+              </span>
+            </div>
             <div
               onClick={() => fetusInputRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
@@ -230,11 +239,56 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                 </p>
               ) : (
                 <p className="font-serif italic text-xl text-[#6E665E]">
-                  Haz clic o arrastra aquí la ecografía de tu bebé (.jpg, .png, .mp4)
+                  Haz clic o arrastra aquí tu ecografía 3D/4D (.jpg, .png, .mp4)
                 </p>
               )}
             </div>
           </div>
+
+          {/* Mother reference photos (only for Tier 3 Maternidad Total with photo guide) */}
+          {selectedTier === 3 && tier3Modality === 'photo_guide' && (
+            <div>
+              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                <span className="eyebrow block">02B · Fotos de la Mamá (Edición Premium)</span>
+                <span className="text-[11px] text-[#8C6D46]">
+                  Para esculpir su silueta exacta
+                </span>
+              </div>
+              <div
+                onClick={() => motherInputRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (e.dataTransfer.files?.length) {
+                    setUploadedMotherPhotos(Array.from(e.dataTransfer.files));
+                  }
+                }}
+                className="border border-dashed border-[#8C6D46]/60 bg-[#F2ECE1]/40 hover:bg-[#F2ECE1] p-6 text-center cursor-pointer transition-colors"
+              >
+                <input
+                  ref={motherInputRef}
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files?.length) {
+                      setUploadedMotherPhotos(Array.from(e.target.files));
+                    }
+                  }}
+                />
+                {uploadedMotherPhotos.length > 0 ? (
+                  <p className="font-serif italic text-lg text-[#2C2825]">
+                    ✓ {uploadedMotherPhotos.length} foto(s) de la madre adjunta(s)
+                  </p>
+                ) : (
+                  <p className="font-serif italic text-lg text-[#6E665E]">
+                    Adjunta 2 a 4 fotografías de referencia de la madre (.jpg, .png)
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Minimal Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -399,11 +453,17 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
           </div>
 
           <div className="pt-6 border-t border-[#E5DEC9] space-y-5">
-            <div className="flex justify-between items-baseline">
-              <span className="eyebrow">Valor de la Obra</span>
-              <span className="font-serif text-3xl text-[#2C2825]">
-                {formatCOP(totalPrice)} COP
-              </span>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-baseline">
+                <span className="eyebrow">Valor de la Obra</span>
+                <span className="font-serif text-3xl text-[#2C2825]">
+                  {formatCOP(totalPrice)} COP
+                </span>
+              </div>
+              <div className="flex justify-between items-baseline text-xs text-[#6E665E]">
+                <span>Tiempo estimado de entrega</span>
+                <span className="font-medium text-[#2C2825]">{currentTier.deliveryDays} hábiles</span>
+              </div>
             </div>
 
             <button

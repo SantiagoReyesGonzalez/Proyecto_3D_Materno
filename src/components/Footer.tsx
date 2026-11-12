@@ -24,7 +24,7 @@ export const Footer: React.FC = () => {
             Colección
           </a>
           <a href="#proceso" className="hover:text-[#2C2825] transition-colors">
-            Proceso
+            Cómo Funciona
           </a>
         </div>
 
