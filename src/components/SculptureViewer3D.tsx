@@ -23,8 +23,7 @@ const StagePlaceholder: React.FC<{ dark: boolean }> = ({ dark }) => (
 );
 
 export const SculptureViewer3D: React.FC = () => {
-  const { openOrderModal } = useProductStore();
-  const [finishId, setFinishId] = useState<ResinFinishId>('porcelain_silk');
+  const { activeFinish: finishId, setFinish: setFinishId, openOrderModal } = useProductStore();
   const [sanctuaryDark, setSanctuaryDark] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [shouldMount3D, setShouldMount3D] = useState(false);
@@ -230,7 +229,8 @@ export const SculptureViewer3D: React.FC = () => {
                   sanctuaryDark ? '!text-[#D4B07B]' : ''
                 }`}
               >
-                El Santuario · Luz de 2700K
+                {sanctuaryDark ? 'Santuario Nocturno · 2700K' : 'Estudio de Día · Alabastro'} —{' '}
+                {FINISH_PRESETS[finishId].hint}
               </span>
               <h2
                 className={`font-serif text-4xl sm:text-5xl font-light leading-[1.12] transition-colors duration-300 ${
@@ -251,8 +251,15 @@ export const SculptureViewer3D: React.FC = () => {
                   sanctuaryDark ? 'text-[#C8BFB5]' : 'text-[#6E665E]'
                 }`}
               >
-                Al deslizar o girar la pieza, la porcelana sedosa desvela a tu bebé sobre piedra
-                travertino con luz cálida de 2700K.
+                Al deslizar o girar la escultura en acabado{' '}
+                <strong
+                  className={`font-normal ${
+                    sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
+                  }`}
+                >
+                  {FINISH_PRESETS[finishId].hint}
+                </strong>
+                , su vientre translúcido revela a tu bebé sobre travertino con luz cálida de 2700K.
               </p>
             </div>
 

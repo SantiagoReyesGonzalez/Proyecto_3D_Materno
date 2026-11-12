@@ -10,7 +10,7 @@ interface ProcessStep {
   eyebrow: string;
   title: string;
   description: string;
-  detailNote: string;
+  cardSummary: string;
   footerTag: string;
   image: string;
   alt: string;
@@ -26,9 +26,9 @@ const PROCESS_STEPS: ProcessStep[] = [
     eyebrow: 'Paso 01 de 04 · Elección de Obra',
     title: 'Decides qué versión quieres',
     description:
-      'Contamos con 3 versiones diseñadas para cada familia: Esencia Gestacional (acabado alabastro en luz natural), Luz de Vida (nuestra edición insignia con pedestal iluminado a 2700K) y Maternidad Total (escultura a medida de la silueta real de la mamá).',
-    detailNote:
-      'Puedes explorar cada acabado en nuestro estudio 3D interactivo antes de elegir tu edición.',
+      'Contamos con 3 versiones diseñadas para cada familia: Esencia Gestacional (alabastro en luz natural), Luz de Vida (nuestra edición insignia con pedestal iluminado a 2700K) y Maternidad Total (escultura a medida de la silueta real de la mamá).',
+    cardSummary:
+      'Elige entre nuestras 3 versiones: Esencia Gestacional, Luz de Vida (2700K) o Maternidad Total a medida.',
     footerTag: '3 ediciones disponibles',
     image: `${import.meta.env.BASE_URL}images/editorial/proceso_1_tres_versiones.jpg`,
     alt: 'Las tres versiones de esculturas Maternidad 3D alineadas sobre mesa de piedra travertino en el atelier',
@@ -36,7 +36,7 @@ const PROCESS_STEPS: ProcessStep[] = [
     highlights: [
       { label: 'I. Esencia Gestacional', value: '$249.000 COP · Base artesanal sin luz' },
       { label: 'II. Luz de Vida (Favorita)', value: '$369.000 COP · Pedestal travertino LED 2700K' },
-      { label: 'III. Maternidad Total', value: '$690.000 COP · Silueta real de la madre + LED' },
+      { label: 'III. Maternidad Total', value: 'Desde $690.000 COP · Silueta real de la madre + LED' },
     ],
   },
   {
@@ -47,8 +47,8 @@ const PROCESS_STEPS: ProcessStep[] = [
     title: 'Nos adjuntas fotos de tu ecografía 3D',
     description:
       'Subes las fotografías o el video de la ecografía 3D o 4D de tu bebé donde se aprecie su rostro o cuerpecito con relieve. Importante: únicamente trabajamos con ecografías 3D; las ecografías tradicionales en 2D (blanco y negro planas) no nos sirven para esculpir el volumen real.',
-    detailNote:
-      'Si tienes varias tomas 3D de la misma sesión, puedes compartirnos tus favoritas para lograr la mayor fidelidad.',
+    cardSummary:
+      'Solo trabajamos con fotografías o videos de ecografía 3D/4D con volumen; no nos sirven ecografías 2D planas.',
     footerTag: 'Solo ecografía 3D · No aplica 2D',
     image: `${import.meta.env.BASE_URL}images/editorial/proceso_2_ecografia_3d.jpg`,
     alt: 'Manos sosteniendo una ecografía prenatal 3D volumétrica junto al teléfono móvil y la escultura iluminada',
@@ -67,15 +67,15 @@ const PROCESS_STEPS: ProcessStep[] = [
     number: '03.',
     shortTab: '03 · Fotos de la mamá',
     eyebrow: 'Paso 03 de 04 · Exclusivo Edición Premium',
-    title: 'Fotos de la mamá si elegiste la más premium',
+    title: 'Fotos de la mamá en la edición premium',
     description:
       'Si seleccionas nuestra edición más exclusiva (III. Maternidad Total), nos adjuntas de 2 a 4 fotografías de referencia de la futura mamá en perfil y tres cuartos —o agendas un escaneo presencial en Bogotá— para modelar su silueta materna exacta abrazando al bebé.',
-    detailNote:
-      'Si eliges Esencia Gestacional o Luz de Vida, no necesitas enviar fotos de la mamá: trabajamos sobre nuestra silueta escultórica de atelier.',
+    cardSummary:
+      'Solo si eliges Maternidad Total: envía 2 a 4 fotos guía de la mamá (o agenda escaneo en Bogotá).',
     footerTag: 'Solo edición Maternidad Total',
     image: `${import.meta.env.BASE_URL}images/editorial/proceso_3_fotos_mama.jpg`,
     alt: 'Futura mamá posando de perfil en luz natural para sus fotos guía junto a su escultura personalizada Maternidad 3D',
-    overlayBadge: 'Opcional · Aplica únicamente si eliges la edición III. Maternidad Total',
+    overlayBadge: 'Aplica únicamente si eliges la edición más premium: III. Maternidad Total',
     highlights: [
       { label: 'Ediciones I y II', value: 'No requieren fotos de la mamá (solo ecografía 3D)' },
       { label: 'Edición III (Guía en casa)', value: '2 a 4 fotos sencillas de perfil con luz natural ($690.000)' },
@@ -87,15 +87,15 @@ const PROCESS_STEPS: ProcessStep[] = [
     number: '04.',
     shortTab: '04 · Pago y entrega',
     eyebrow: 'Paso 04 de 04 · Confirmación y Envío',
-    title: 'Se confirma el precio, pagas y recibes en casa',
+    title: 'Confirmas el valor, pagas y recibes en casa',
     description:
-      'El sistema te muestra el precio exacto según la versión elegida. Realizas tu pago con la modalidad que prefieras (reserva 50% al iniciar y 50% al aprobar el modelo digital por WhatsApp, 3 cuotas o Vaca grupal) y recibes la obra en su estuche de lino en 3 a 5 días hábiles (7 a 10 días en Maternidad Total).',
-    detailNote:
-      'Antes de fundir en resina óptica te enviamos por WhatsApp la vista previa 3D para tu aprobación.',
+      'El sistema calcula el valor exacto según tu versión. Realizas tu pago (reserva 50% al iniciar y 50% al aprobar la vista digital por WhatsApp, 3 cuotas o Vaca grupal) y recibes la obra en su estuche de lino en 3 a 5 días hábiles (7 a 10 días en Maternidad Total).',
+    cardSummary:
+      'Calculamos tu valor exacto, pagas en tu modalidad elegida y recibes en 3–5 días hábiles (Total: 7–10 días).',
     footerTag: 'Entrega: 3–5 días · Total 7–10 días',
     image: `${import.meta.env.BASE_URL}images/editorial/proceso_4_pago_entrega.jpg`,
     alt: 'Estuche artesanal en lino belga abierto con guantes blancos, certificado con sello en lacre y la escultura Maternidad 3D lista para entrega',
-    overlayBadge: 'Precios claros · Reserva con el 50% · Entrega asegurada en estuche de lino belga',
+    overlayBadge: 'Precio transparente · Reserva con el 50% · Entrega en estuche de lino belga',
     highlights: [
       { label: 'Modalidades de pago', value: 'Abono 50% / 50%, 3 cuotas sin interés o Vaca Baby Shower' },
       { label: 'Plazo Esencia y Luz de Vida', value: 'Entrega en 3 a 5 días hábiles tras aprobación' },
@@ -212,20 +212,26 @@ export const HowItWorksSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Featured Carousel Stage (Split Editorial Viewer) */}
-        <div className="bg-[#FAF7F2] border border-[#E5DEC9] grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+        {/* Main Featured Carousel Stage (Split Editorial Viewer with Arrow Key Navigation) */}
+        <div
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowLeft') handlePrev();
+            if (e.key === 'ArrowRight') handleNext();
+          }}
+          className="bg-[#FAF7F2] border border-[#E5DEC9] grid grid-cols-1 lg:grid-cols-12 overflow-hidden focus:outline-none focus:ring-1 focus:ring-[#8C6D46]"
+        >
           {/* Left 7 Columns: Editorial Photograph with Contextual Badge */}
-          <div className="lg:col-span-7 relative bg-[#E5DEC9]/30 border-b lg:border-b-0 lg:border-r border-[#E5DEC9]">
+          <div className="lg:col-span-7 relative bg-[#E5DEC9]/30 border-b lg:border-b-0 lg:border-r border-[#E5DEC9] flex flex-col">
             <div className="aspect-[4/3] lg:aspect-auto lg:h-full w-full overflow-hidden relative">
               <img
-                key={activeStep.image}
                 src={activeStep.image}
                 alt={activeStep.alt}
                 loading="lazy"
                 decoding="async"
                 width={1000}
                 height={750}
-                className="w-full h-full object-cover transition-opacity duration-500"
+                className="w-full h-full object-cover transition-opacity duration-300"
               />
 
               {/* Top-left subtle step badge */}
@@ -235,12 +241,18 @@ export const HowItWorksSection: React.FC = () => {
                 </span>
               </div>
 
-              {/* Bottom contextual overlay bar */}
-              <div className="absolute bottom-0 inset-x-0 bg-[#2C2825]/88 text-[#FAF7F2] px-5 py-3.5 backdrop-blur-[2px]">
+              {/* Desktop contextual overlay bar along bottom edge (on mobile flows below so photo is 100% uncovered) */}
+              <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-[#2C2825]/88 text-[#FAF7F2] px-5 py-3.5 backdrop-blur-[2px]">
                 <p className="text-xs sm:text-[13px] font-light tracking-wide">
                   {activeStep.overlayBadge}
                 </p>
               </div>
+            </div>
+
+            <div className="sm:hidden bg-[#2C2825] text-[#FAF7F2] px-4 py-3">
+              <p className="text-xs font-light leading-snug">
+                {activeStep.overlayBadge}
+              </p>
             </div>
           </div>
 
@@ -354,13 +366,13 @@ export const HowItWorksSection: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Step Card Copy */}
+                  {/* Step Card Copy — concise non-truncated editorial summary */}
                   <div className="p-6 space-y-2.5">
                     <h3 className="font-serif text-2xl text-[#2C2825] font-light leading-snug">
                       {step.title}
                     </h3>
-                    <p className="text-xs sm:text-[13px] text-[#6E665E] font-light leading-relaxed line-clamp-4">
-                      {step.description}
+                    <p className="text-xs sm:text-[13px] text-[#6E665E] font-light leading-relaxed">
+                      {step.cardSummary}
                     </p>
                   </div>
                 </div>
@@ -387,6 +399,7 @@ export const HowItWorksSection: React.FC = () => {
                   {tier.name}
                 </span>
                 <p className="font-serif text-lg text-[#2C2825] leading-snug">
+                  {tier.id === 3 ? 'Desde ' : ''}
                   {formatCOP(tier.officialPrice)} COP
                 </p>
                 <span className="font-sans text-xs text-[#6E665E] block">

@@ -1,6 +1,6 @@
 export type ProductTierId = 1 | 2 | 3;
 
-export type FinishId = 'smoked' | 'frosted' | 'obsidian' | 'bronze';
+export type FinishId = 'porcelain_silk' | 'champagne_quartz' | 'honey_amber';
 
 export type PaymentModality = 'split_50_50' | 'addi_3_cuotas' | 'vaca_baby_shower';
 

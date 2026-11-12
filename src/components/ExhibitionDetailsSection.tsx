@@ -29,7 +29,7 @@ const ATMOSPHERE_MOMENTS: AtmosphereMoment[] = [
     eyebrow: 'Ritual de Entrega · Lino Belga',
     title: 'Resguardo de legado',
     caption:
-      'Cada obra llega en estuche artesanal de lino belga con guantes de conservación, sello en lacre y placa de latón lista para su nombre.',
+      'Cada obra llega en estuche artesanal de lino belga con guantes de conservación, sello en lacre y placa de latón cepillado lista para grabar su nombre.',
     image: `${import.meta.env.BASE_URL}images/editorial/detalle_estuche_lino.jpg`,
     alt: 'Estuche abierto en lino belga con guantes blancos de conservación, certificado sellado en lacre, placa de latón cepillado y la escultura al lado',
   },

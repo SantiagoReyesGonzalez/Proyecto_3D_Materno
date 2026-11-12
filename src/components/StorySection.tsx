@@ -19,8 +19,8 @@ export const StorySection: React.FC = () => {
           </h2>
 
           <p className="text-base text-[#6E665E] font-light leading-relaxed">
-            Cada pieza nace de la ecografía real de tu bebé, fundida a mano en Bogotá para
-            resguardar el vínculo de familia desde la dulce espera.
+            Cada pieza nace de la ecografía 3D de tu bebé, fundida a mano en Bogotá para resguardar
+            el vínculo de familia desde la dulce espera.
           </p>
         </div>
 
@@ -38,7 +38,7 @@ export const StorySection: React.FC = () => {
             />
           </div>
           <figcaption className="font-serif italic text-base text-[#6E665E] text-right">
-            01 — La espera compartida: manos que acompañan una historia que comienza en casa.
+            La espera compartida: manos que acompañan una historia que comienza en casa.
           </figcaption>
         </figure>
 
@@ -57,7 +57,7 @@ export const StorySection: React.FC = () => {
               />
             </div>
             <figcaption className="font-serif italic text-base text-[#6E665E]">
-              02 — Oficio artesanal en Bogotá: resina pulida a mano y tacto sedoso.
+              Oficio artesanal en Bogotá: resina pulida a mano y tacto sedoso.
             </figcaption>
           </figure>
 
@@ -74,7 +74,7 @@ export const StorySection: React.FC = () => {
               />
             </div>
             <figcaption className="font-serif italic text-base text-[#6E665E]">
-              03 — Silueta en alabastro satinado con vientre translúcido sobre piedra natural.
+              Silueta en alabastro satinado con vientre translúcido sobre piedra natural.
             </figcaption>
           </figure>
         </div>
@@ -104,7 +104,7 @@ export const StorySection: React.FC = () => {
                 />
               </div>
               <figcaption className="font-serif italic text-base text-[#6E665E]">
-                04 — Luz maternal de 2700K que acompaña las noches en su habitación.
+                Luz maternal de 2700K que acompaña las noches en su habitación.
               </figcaption>
             </figure>
 
@@ -121,7 +121,7 @@ export const StorySection: React.FC = () => {
                 />
               </div>
               <figcaption className="font-serif italic text-base text-[#6E665E]">
-                05 — Acabado satinado al paño: transparencia calibrada sobre el vientre iluminado.
+                Acabado satinado al paño: transparencia calibrada sobre el vientre iluminado.
               </figcaption>
             </figure>
 
@@ -138,7 +138,7 @@ export const StorySection: React.FC = () => {
                 />
               </div>
               <figcaption className="font-serif italic text-base text-[#6E665E]">
-                06 — Basamento en travertino romano con zócalo en latón cepillado y halo de 2700K.
+                Basamento en travertino romano con zócalo en latón cepillado y halo de 2700K.
               </figcaption>
             </figure>
           </div>

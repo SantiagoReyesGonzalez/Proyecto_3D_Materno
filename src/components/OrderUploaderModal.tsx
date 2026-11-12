@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { X } from 'lucide-react';
 import { useProductStore } from '../store/useProductStore';
 import { FINISH_OPTIONS, PRODUCT_TIERS, formatCOP } from '../data/products';
-import { ProductTierId } from '../types/product';
+import { FinishId, ProductTierId } from '../types/product';
 
 const orderFormSchema = z.object({
   motherName: z.string().min(2, 'Ingresa tu nombre'),
@@ -68,14 +68,41 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
         ? `3 cuotas sin interés (${formatCOP(installment3)} COP)`
         : `Regalo grupal Baby Shower (${vacaParticipants} × ${formatCOP(vacaPerPerson)} COP)`;
 
+    const tierDetail =
+      selectedTier === 3
+        ? tier3Modality === 'presencial_scan'
+          ? `${currentTier.name} (Escaneo presencial Bogotá)`
+          : `${currentTier.name} (Guía fotográfica)`
+        : currentTier.name;
+
+    const attachmentsLine = [
+      uploadedFetusFile ? `Ecografía 3D (${uploadedFetusFile.name})` : 'Ecografía 3D (por enviar en este chat)',
+      selectedTier === 3 && tier3Modality === 'photo_guide'
+        ? uploadedMotherPhotos.length > 0
+          ? `${uploadedMotherPhotos.length} foto(s) de la madre adjunta(s)`
+          : 'Fotos de la madre (por enviar)'
+        : null,
+    ]
+      .filter(Boolean)
+      .join(' + ');
+
+    const plaqueLine =
+      selectedTier === 3 && customerData.plaqueText.trim()
+        ? `• Placa grabada: ${customerData.plaqueText.trim()}\n`
+        : '';
+
     const message =
       `Hola Atelier Maternidad 3D, deseo reservar mi obra:\n\n` +
-      `• Edición: ${currentTier.name}\n` +
-      `• Material: ${currentFinish.name}\n` +
+      `• Edición: ${tierDetail}\n` +
+      `• Valor: ${formatCOP(totalPrice)} COP\n` +
+      `• Acabado: ${currentFinish.name}\n` +
       `• Modalidad: ${modalityLabel}\n` +
       `• Entrega estimada: ${currentTier.deliveryDays} hábiles\n` +
+      plaqueLine +
+      `• Archivos: ${attachmentsLine}\n` +
       `• Nombre: ${customerData.motherName}\n` +
       `• Bebé: ${customerData.babyName} (Semana ${customerData.weeks})\n` +
+      `• WhatsApp: ${customerData.phone}\n` +
       `• Ciudad: ${customerData.city}`;
 
     return `https://wa.me/573000000000?text=${encodeURIComponent(message)}`;
@@ -243,6 +270,10 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                 </p>
               )}
             </div>
+            <p className="mt-2 text-xs text-[#6E665E] font-light">
+              Importante: únicamente modelamos desde ecografías 3D/4D con relieve; las ecografías 2D
+              planas no permiten reconstruir las facciones.
+            </p>
           </div>
 
           {/* Mother reference photos (only for Tier 3 Maternidad Total with photo guide) */}
@@ -290,7 +321,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
             </div>
           )}
 
-          {/* Minimal Fields */}
+          {/* Customer & Custom Sculpture Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="eyebrow block mb-2">Tu Nombre</label>
@@ -325,6 +356,35 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
             </div>
 
             <div>
+              <label className="eyebrow block mb-2">Semana de Gestación</label>
+              <input
+                type="number"
+                min={12}
+                max={41}
+                value={customerData.weeks}
+                onChange={(e) => updateCustomerData({ weeks: Number(e.target.value) || 28 })}
+                className="w-full px-4 py-3 bg-[#FAF7F2] border border-[#E5DEC9] text-sm text-[#2C2825] focus:outline-none focus:border-[#8C6D46]"
+              />
+              {formErrors.weeks && (
+                <span className="text-[11px] text-[#8C6D46] mt-1 block">{formErrors.weeks}</span>
+              )}
+            </div>
+
+            <div>
+              <label className="eyebrow block mb-2">Ciudad de Entrega</label>
+              <input
+                type="text"
+                placeholder="Bogotá D.C."
+                value={customerData.city}
+                onChange={(e) => updateCustomerData({ city: e.target.value })}
+                className="w-full px-4 py-3 bg-[#FAF7F2] border border-[#E5DEC9] text-sm text-[#2C2825] focus:outline-none focus:border-[#8C6D46]"
+              />
+              {formErrors.city && (
+                <span className="text-[11px] text-[#8C6D46] mt-1 block">{formErrors.city}</span>
+              )}
+            </div>
+
+            <div>
               <label className="eyebrow block mb-2">WhatsApp</label>
               <input
                 type="tel"
@@ -339,10 +399,10 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
             </div>
 
             <div>
-              <label className="eyebrow block mb-2">Material</label>
+              <label className="eyebrow block mb-2">Acabado en Resina</label>
               <select
                 value={activeFinish}
-                onChange={(e) => setFinish(e.target.value as any)}
+                onChange={(e) => setFinish(e.target.value as FinishId)}
                 className="w-full px-4 py-3 bg-[#FAF7F2] border border-[#E5DEC9] text-sm text-[#2C2825] focus:outline-none focus:border-[#8C6D46]"
               >
                 {FINISH_OPTIONS.map((f) => (
@@ -352,6 +412,21 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                 ))}
               </select>
             </div>
+
+            {selectedTier === 3 && (
+              <div className="sm:col-span-2">
+                <label className="eyebrow block mb-2">
+                  Grabado en Placa de Latón (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej. Emiliano · Dulce espera 2026"
+                  value={customerData.plaqueText}
+                  onChange={(e) => updateCustomerData({ plaqueText: e.target.value })}
+                  className="w-full px-4 py-3 bg-[#FAF7F2] border border-[#E5DEC9] text-sm text-[#2C2825] focus:outline-none focus:border-[#8C6D46]"
+                />
+              </div>
+            )}
           </div>
         </div>
 

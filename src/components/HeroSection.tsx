@@ -19,8 +19,8 @@ export const HeroSection: React.FC = () => {
             </h1>
 
             <p className="text-base sm:text-[17px] text-[#6E665E] leading-relaxed font-light max-w-md">
-              Transformamos la ecografía tridimensional de tu bebé en una reliquia familiar de
-              resina óptica, modelada y pulida artesanalmente en Bogotá.
+              Transformamos la ecografía 3D de tu bebé en una reliquia familiar de resina óptica,
+              modelada y pulida artesanalmente en Bogotá.
             </p>
 
             <div className="pt-4">

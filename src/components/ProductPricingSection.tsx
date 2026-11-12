@@ -28,8 +28,7 @@ export const ProductPricingSection: React.FC = () => {
               <em className="italic font-normal text-[#8C6D46]">atesorar la espera.</em>
             </h2>
             <p className="text-base text-[#6E665E] font-light">
-              Cada edición alberga a tu bebé esculpido fielmente a partir de su ecografía
-              tridimensional.
+              Cada edición alberga a tu bebé esculpido fielmente a partir de su ecografía 3D.
             </p>
           </div>
 
@@ -62,14 +61,20 @@ export const ProductPricingSection: React.FC = () => {
                       {tier.name}
                     </h3>
                     <p className="font-serif italic text-2xl text-[#8C6D46]">
+                      {tier.id === 3 ? 'Desde ' : ''}
                       {formatCOP(tier.officialPrice)} COP
                     </p>
                   </div>
 
-                  {/* 2 Poetic Lines (Strictly <= 20 words) */}
-                  <p className="text-sm sm:text-[15px] text-[#6E665E] font-light leading-relaxed">
-                    {tier.shortDescription}
-                  </p>
+                  {/* Description + Clear Spec & Lead-time Meta */}
+                  <div className="space-y-3">
+                    <p className="text-sm sm:text-[15px] text-[#6E665E] font-light leading-relaxed">
+                      {tier.shortDescription}
+                    </p>
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-[#755936]">
+                      {tier.specs.lighting} · Entrega {tier.deliveryDays} hábiles
+                    </p>
+                  </div>
                 </div>
 
                 {/* Clean Editorial Link */}

@@ -47,7 +47,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   tier3Modality: 'photo_guide',
   usePromoPrice: false,
   isLedOn: true,
-  activeFinish: 'smoked',
+  activeFinish: 'porcelain_silk',
   paymentModality: 'split_50_50',
   vacaParticipants: 6,
   isOrderModalOpen: false,
