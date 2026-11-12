@@ -42,7 +42,7 @@ export const HeroSection: React.FC = () => {
                 <img
                   src="/images/editorial/hero_editorial_alabaster.jpg"
                   alt="Escultura Maternidad 3D en resina óptica sobre piedra travertino con luz cálida"
-                  fetchPriority="high"
+                  decoding="async"
                   width={800}
                   height={1000}
                   className="w-full h-full object-cover"

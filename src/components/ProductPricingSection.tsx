@@ -44,6 +44,7 @@ export const ProductPricingSection: React.FC = () => {
                       src={EDITION_PORTRAIT_IMAGES[tier.id]}
                       alt={tier.name}
                       loading="lazy"
+                      decoding="async"
                       width={800}
                       height={1000}
                       className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"

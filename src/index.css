@@ -38,10 +38,9 @@ dialog::backdrop {
   background: rgba(44, 40, 37, 0.55);
 }
 
-/* Defer off-screen heavy sections per modern-web-guidance (defer-rendering-heavy-content) */
+/* Smooth hardware-accelerated section rendering without scroll layout spikes */
 .deferred-section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto none auto 720px;
+  transform: translateZ(0);
 }
 
 /* Editorial Eyebrow Micro-label */

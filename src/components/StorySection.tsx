@@ -32,6 +32,7 @@ export const StorySection: React.FC = () => {
                 src="/images/editorial/atelier_craft_hands.jpg"
                 alt="Manos del escultor en el taller de Bogotá sosteniendo la obra Maternidad 3D"
                 loading="lazy"
+                decoding="async"
                 width={800}
                 height={1000}
                 className="w-full h-full object-cover"
@@ -48,6 +49,7 @@ export const StorySection: React.FC = () => {
                 src="/images/editorial/nursery_warm_glow.jpg"
                 alt="Escultura Maternidad 3D iluminada con luz cálida de 2700K en la habitación del bebé"
                 loading="lazy"
+                decoding="async"
                 width={800}
                 height={1000}
                 className="w-full h-full object-cover"
