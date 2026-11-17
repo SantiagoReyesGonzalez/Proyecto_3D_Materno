@@ -60,14 +60,7 @@ export function App() {
         <SculptureViewer3D />
         <StorySection />
         <ProductPricingSection />
-        <Suspense
-          fallback={
-            <section
-              id="pedido-directo"
-              className="bg-[#FAF7F2] py-28 lg:py-36 border-t border-[#E5DEC9] min-h-[720px]"
-            />
-          }
-        >
+        <Suspense fallback={null}>
           <OrderUploaderModal />
         </Suspense>
       </main>

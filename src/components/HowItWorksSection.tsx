@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useProductStore } from '../store/useProductStore';
 
 interface ProcessStep {
   id: number;
@@ -69,6 +70,7 @@ const PROCESS_STEPS: ProcessStep[] = [
 ];
 
 export const HowItWorksSection: React.FC = () => {
+  const { openOrderModal } = useProductStore();
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [dragOffset, setDragOffset] = useState<number>(0);
   const swipeStartRef = useRef<{
@@ -395,6 +397,18 @@ export const HowItWorksSection: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Minimal Closing Reservation Trigger */}
+        <div className="mt-12 sm:mt-16 flex justify-center">
+          <button
+            type="button"
+            onClick={() => openOrderModal(undefined, 'split_50_50')}
+            className="inline-flex items-center justify-center gap-3 px-8 py-4 text-[11px] uppercase tracking-[0.22em] text-[#FAF7F2] bg-[#2C2825] hover:bg-[#8C6D46] transition-colors"
+          >
+            <span>Reservar mi Obra</span>
+            <span>→</span>
+          </button>
         </div>
       </div>
     </section>

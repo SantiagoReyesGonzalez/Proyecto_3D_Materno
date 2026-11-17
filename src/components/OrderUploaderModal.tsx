@@ -571,29 +571,18 @@ export const OrderUploaderModal: React.FC = () => {
   }, [closeOrderModal]);
 
   return (
-    <>
-      <section
-        id="pedido-directo"
-        className="scroll-mt-20 deferred-section bg-[#FAF7F2] py-20 sm:py-28 border-t border-[#E5DEC9]"
-      >
-        <div className="max-w-5xl mx-auto px-5 sm:px-10">
-          <OrderFormContent />
-        </div>
-      </section>
-
-      <dialog
-        ref={dialogRef}
-        closedby="any"
-        aria-labelledby={titleId}
-        className="w-full max-w-4xl bg-transparent p-0 m-auto backdrop:bg-[#2C2825]/60 open:block"
-      >
-        <h2 id={titleId} className="sr-only">
-          Reserva de Obra Maternidad 3D
-        </h2>
-        <div className="max-h-[90dvh] overflow-y-auto">
-          <OrderFormContent isModal onClose={closeOrderModal} />
-        </div>
-      </dialog>
-    </>
+    <dialog
+      ref={dialogRef}
+      closedby="any"
+      aria-labelledby={titleId}
+      className="w-[calc(100%-1.5rem)] sm:w-full max-w-4xl bg-transparent p-0 m-auto backdrop:bg-[#2C2825]/65 open:block"
+    >
+      <h2 id={titleId} className="sr-only">
+        Reserva de Obra Maternidad 3D
+      </h2>
+      <div className="max-h-[90dvh] overflow-y-auto">
+        <OrderFormContent isModal onClose={closeOrderModal} />
+      </div>
+    </dialog>
   );
 };
