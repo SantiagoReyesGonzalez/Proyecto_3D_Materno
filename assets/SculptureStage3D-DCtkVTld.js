@@ -1,4 +1,4 @@
-import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as Ne,e as Fe,f as te,B as _e,g as Z,h as ne,H as I,R as $,V as ae,O as Te,i as d}from"./three-vendor-Clhz_nA_.js";import{r as o}from"./ui-vendor-DoKJ_vWQ.js";import{a as L}from"./index-BfIbvCK1.js";const H={full:{pos:[0,.03,2.95],target:[0,-.02,0]},womb:{pos:[.1,-.14,1.38],target:[-.01,-.2,.14]},plaque:{pos:[0,-.44,1.56],target:[0,-.66,.42]}},K="https://www.gstatic.com/draco/versioned/decoders/1.5.7/",se="/Proyecto_3D_Materno/models/Madre.glb",ce="/Proyecto_3D_Materno/models/bebe.glb";U.preload(se,K);U.preload(ce,K);const ke=`
+import{j as o,C as De,A as We,u as te,b as H,d as t,S as C,F as Q,L as Ee,M as Le,e as Ae,f as ee,B as Ne,g as q,h as ae,R as X,H as le,V as oe,O as _e,i as p}from"./three-vendor-Co5dbrxm.js";import{r as e}from"./ui-vendor-C92jzkfD.js";import{a as L}from"./index-B4qENE55.js";const B={full:{pos:[0,.03,2.95],target:[0,-.02,0]},womb:{pos:[.1,-.14,1.38],target:[-.01,-.2,.14]},plaque:{pos:[0,-.44,1.56],target:[0,-.66,.42]}},U="https://www.gstatic.com/draco/versioned/decoders/1.5.7/",ie="/Proyecto_3D_Materno/models/Madre.glb",ne="/Proyecto_3D_Materno/models/bebe.glb";H.preload(ie,U);H.preload(ne,U);const Fe=`
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
@@ -10,7 +10,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,je=`
+`,Te=`
   uniform vec3 uSkinColor;
   uniform vec3 uSssColor;
   uniform vec3 uDeepShadowColor;
@@ -66,7 +66,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
 
     gl_FragColor = vec4(color, 1.0);
   }
-`,ie=`
+`,re=`
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
@@ -92,11 +92,11 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,ze=`
+`,ke=`
   void main() {
     gl_FragColor = vec4(0.0);
   }
-`,Be=`
+`,ze=`
   uniform vec3 uShellColor;
   uniform vec3 uDeepColor;
   uniform vec3 uRimColor;
@@ -166,7 +166,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
 
     gl_FragColor = vec4(color, targetAlpha);
   }
-`,Ve=`
+`,je=`
   varying vec3 vLocalPos;
   varying vec3 vNormalLocal;
   varying vec3 vNormalWorld;
@@ -180,7 +180,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,Ge=`
+`,Ve=`
   uniform vec3 uStoneLight;
   uniform vec3 uStoneMid;
   uniform vec3 uStonePore;
@@ -267,7 +267,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
 
     gl_FragColor = vec4(color, 1.0);
   }
-`,He=`
+`,Ge=`
   varying vec3 vLocalPos;
   varying vec3 vNormalWorld;
   varying vec3 vViewDir;
@@ -279,7 +279,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,Ie=`
+`,Be=`
   uniform float uWarmLight;
   uniform float uDarkTheme;
 
@@ -306,14 +306,14 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
 
     gl_FragColor = vec4(finalColor, 1.0);
   }
-`,Ue=`
+`,He=`
   varying vec2 vUv;
 
   void main() {
     vUv = uv * 2.0 - 1.0;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,Ke=`
+`,Ue=`
   uniform float uWarmLight;
   uniform float uDarkTheme;
 
@@ -337,13 +337,13 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
 
     gl_FragColor = vec4(color, alpha);
   }
-`,Oe=`
+`,Ie=`
   varying vec2 vUv;
   void main() {
     vUv = uv;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,qe=`
+`,Ke=`
   varying vec2 vUv;
   uniform float uStrength;
 
@@ -353,7 +353,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     float halo = exp(-d * 2.55) * (1.0 - smoothstep(0.62, 1.0, d));
     gl_FragColor = vec4(1.0, 0.72, 0.34, halo * uStrength);
   }
-`,Xe=`
+`,Oe=`
   attribute float aScale;
   attribute float aPhase;
   uniform float uPhaseShift;
@@ -369,7 +369,7 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     gl_PointSize = aScale * uPixelRatio * (22.0 / max(1.0, -mvPos.z));
     vTwinkle = 0.55 + 0.45 * sin(aPhase + uPhaseShift * 6.0);
   }
-`,Ye=`
+`,qe=`
   uniform float uAlpha;
   varying float vTwinkle;
 
@@ -378,4 +378,4 @@ import{j as e,C as Ae,A as Ee,u as le,b as U,d as t,S as y,F as re,L as Le,M as 
     float soft = pow(max(0.0, 1.0 - d * 2.0), 2.2);
     gl_FragColor = vec4(1.0, 0.84, 0.54, soft * uAlpha * vTwinkle);
   }
-`,Ze=({progressRef:P,finishId:D,warmLightOn:n,sanctuaryDark:r,isMobile:a,cameraPreset:l,ultrasoundMode:m,engravedText:h,showHotspots:W,onSelectCameraPreset:g})=>{const{gl:S,scene:b,camera:A,invalidate:x}=le(),E=U(se,K),_=U(ce,K),O=o.useRef(null),T=o.useRef(.95),f=o.useRef(n?1:0),M=o.useRef(r?1:0),k=o.useRef(m?1:0),j=o.useRef(.06),u=L[D],q=o.useMemo(()=>new t(r?u.darkShell:u.lightShell),[u,r]),me=o.useMemo(()=>new t(r?u.darkDeep:u.lightDeep),[u,r]),ue=o.useMemo(()=>new t(r?u.darkRim:u.lightRim),[u,r]),J=o.useMemo(()=>new t(u.wombGlowColor),[u]),ve=o.useMemo(()=>new t(r?"#DED2C1":"#F3ECE1"),[r]),pe=o.useMemo(()=>new t(r?"#BAA995":"#DFD3C2"),[r]),de=o.useMemo(()=>new t(r?"#70604E":"#9C8A74"),[r]),z=o.useMemo(()=>new y({vertexShader:ke,fragmentShader:je,uniforms:{uSkinColor:{value:new t("#F5D5BC")},uSssColor:{value:new t("#F2954E")},uDeepShadowColor:{value:new t("#C49574")},uWarmLight:{value:n?1:0},uUltrasoundMode:{value:m?1:0}},depthWrite:!0,depthTest:!0}),[]),Q=o.useMemo(()=>new y({vertexShader:ie,fragmentShader:ze,colorWrite:!1,depthWrite:!0,depthTest:!0,side:re}),[]),v=o.useMemo(()=>new y({vertexShader:ie,fragmentShader:Be,uniforms:{uShellColor:{value:new t(L.porcelain_silk.lightShell)},uDeepColor:{value:new t(L.porcelain_silk.lightDeep)},uRimColor:{value:new t(L.porcelain_silk.lightRim)},uWombGlowColor:{value:new t(L.porcelain_silk.wombGlowColor)},uReveal:{value:.95},uWarmLight:{value:n?1:0},uWombCenterAlpha:{value:L.porcelain_silk.wombCenterAlpha}},transparent:!0,depthWrite:!1,depthTest:!0,depthFunc:Le,side:re}),[]),R=o.useMemo(()=>new y({vertexShader:Ve,fragmentShader:Ge,uniforms:{uStoneLight:{value:new t("#F3ECE1")},uStoneMid:{value:new t("#DFD3C2")},uStonePore:{value:new t("#9C8A74")},uGlowColor:{value:new t("#FFA84C")},uWarmLight:{value:n?1:0},uDarkTheme:{value:r?1:0}}}),[]),X=o.useMemo(()=>new y({vertexShader:He,fragmentShader:Ie,uniforms:{uWarmLight:{value:n?1:0},uDarkTheme:{value:r?1:0}}}),[]),fe=o.useMemo(()=>new Ne({color:new t("#C9A46B"),metalness:.72,roughness:.3}),[]),Y=o.useMemo(()=>new y({vertexShader:Ue,fragmentShader:Ke,uniforms:{uWarmLight:{value:n?1:0},uDarkTheme:{value:r?1:0}},transparent:!0,depthWrite:!1}),[]),ee=o.useMemo(()=>new Fe({color:new t("#FFB866"),transparent:!0,opacity:n?.55:0,depthWrite:!1}),[]),oe=o.useMemo(()=>new y({vertexShader:Oe,fragmentShader:qe,uniforms:{uStrength:{value:n&&r?.48:.12}},transparent:!0,depthWrite:!1,blending:te}),[]),B=o.useMemo(()=>{const s=new Float32Array(108),p=new Float32Array(36),i=new Float32Array(36);for(let c=0;c<36;c++){const N=c*2.39996,F=.52+c*37%100/100*.85,G=-.68+c*53%100/100*1.55;s[c*3]=Math.cos(N)*F,s[c*3+1]=G,s[c*3+2]=Math.sin(N)*F*.72,p[c]=.75+c*19%100/100*1.35,i[c]=c*.42}const C=new _e;C.setAttribute("position",new Z(s,3)),C.setAttribute("aScale",new Z(p,1)),C.setAttribute("aPhase",new Z(i,1));const V=new y({vertexShader:Xe,fragmentShader:Ye,uniforms:{uPhaseShift:{value:.5},uPixelRatio:{value:Math.min(window.devicePixelRatio||1,a?1.25:1.5)},uAlpha:{value:r?.75:.25}},transparent:!0,depthWrite:!1,blending:te});return{geometry:C,material:V}},[a]),he=o.useMemo(()=>{const w=_.scene.clone(!0);return w.traverse(s=>{if(s.isMesh){const p=s;p.material=z,p.renderOrder=1}}),w},[_.scene,z]),ge=o.useMemo(()=>{const w=E.scene.clone(!0);return w.traverse(s=>{if(s.isMesh){const p=s;p.material=Q,p.renderOrder=2}}),w},[E.scene,Q]),xe=o.useMemo(()=>{const w=E.scene.clone(!0);return w.traverse(s=>{if(s.isMesh){const p=s;p.material=v,p.renderOrder=3}}),w},[E.scene,v]);o.useEffect(()=>{S.compile(b,A),x()},[S,b,A,x]),o.useEffect(()=>{x()},[D,n,r,l,m,h,x]),ne((w,s)=>{const i=Math.min(s,.05)*6.5,C=P.current,V=l==="womb"||m?1:.45+Math.min(1,C*1.25)*.55,c=l==="plaque"?0:l==="womb"?.08:d.lerp(-.42,.38,C),N=n?1:0,F=r?1:0,G=m?1:0;T.current=d.lerp(T.current,V,i),j.current=d.lerp(j.current,c,i),f.current=d.lerp(f.current,N,i),M.current=d.lerp(M.current,F,i),k.current=d.lerp(k.current,G,i),O.current&&(O.current.rotation.y=j.current),v.uniforms.uReveal.value=T.current,v.uniforms.uWarmLight.value=f.current,v.uniforms.uShellColor.value.lerp(q,i),v.uniforms.uDeepColor.value.lerp(me,i),v.uniforms.uRimColor.value.lerp(ue,i),v.uniforms.uWombGlowColor.value.lerp(J,i),v.uniforms.uWombCenterAlpha.value=d.lerp(v.uniforms.uWombCenterAlpha.value,u.wombCenterAlpha,i),z.uniforms.uWarmLight.value=f.current,z.uniforms.uUltrasoundMode.value=k.current,R.uniforms.uStoneLight.value.lerp(ve,i),R.uniforms.uStoneMid.value.lerp(pe,i),R.uniforms.uStonePore.value.lerp(de,i),R.uniforms.uGlowColor.value.lerp(J,i),R.uniforms.uWarmLight.value=f.current,R.uniforms.uDarkTheme.value=M.current,X.uniforms.uWarmLight.value=f.current,X.uniforms.uDarkTheme.value=M.current,Y.uniforms.uWarmLight.value=f.current,Y.uniforms.uDarkTheme.value=M.current,ee.opacity=d.lerp(0,.55,f.current),oe.uniforms.uStrength.value=d.lerp(.08,.52,M.current)*d.lerp(.2,1,f.current),B.material.uniforms.uPhaseShift.value=C,B.material.uniforms.uAlpha.value=d.lerp(.18,.85,M.current)*d.lerp(.35,1,f.current);const Ce=Math.abs(V-T.current),ye=Math.abs(c-j.current),De=Math.abs(N-f.current),Re=Math.abs(F-M.current),Pe=Math.abs(G-k.current),We=Math.abs(v.uniforms.uShellColor.value.r-q.r)+Math.abs(v.uniforms.uShellColor.value.g-q.g);(Ce>.002||ye>.002||De>.002||Re>.002||Pe>.002||We>.003)&&x()});const we=a?2:4,Se=a?40:64,be=h.trim()||"EMILIANO · SEMANA 28",Me=h.trim().length>0||l==="plaque";return e.jsxs(e.Fragment,{children:[e.jsxs("mesh",{position:[0,-.02,-.72],renderOrder:0,children:[e.jsx("planeGeometry",{args:[2.8,3.2]}),e.jsx("primitive",{object:oe,attach:"material"})]}),e.jsx("points",{geometry:B.geometry,material:B.material,renderOrder:4}),e.jsxs("group",{ref:O,position:[0,-.62,0],scale:.8,rotation:[0,.06,0],children:[e.jsx("group",{position:[-.01,.21,.095],scale:.275,children:e.jsx("primitive",{object:he})}),e.jsx("primitive",{object:ge,position:[0,0,0],scale:1}),e.jsx("primitive",{object:xe,position:[0,0,0],scale:1}),W&&l==="full"&&g&&e.jsxs(e.Fragment,{children:[e.jsx(I,{position:[.24,.49,.34],center:!0,zIndexRange:[12,0],children:e.jsxs("button",{type:"button",onClick:()=>g("womb"),className:"pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105",children:[e.jsx("span",{className:"w-2 h-2 rounded-full bg-[#D4B07B] hotspot-pulse"}),e.jsx("span",{children:"Ver bebé en el vientre"})]})}),e.jsx(I,{position:[-.36,-.01,.68],center:!0,zIndexRange:[12,0],children:e.jsxs("button",{type:"button",onClick:()=>g("plaque"),className:"pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105",children:[e.jsx("span",{className:"text-[#D4B07B]",children:"✦"}),e.jsx("span",{children:"Placa grabada"})]})})]}),e.jsxs("group",{position:[0,0,.01],children:[e.jsx($,{args:[1.34,.132,1.34],radius:.008,smoothness:we,position:[0,-.066,0],material:R}),e.jsx($,{args:[.56,.048,.014],radius:.002,smoothness:2,position:[0,-.066,.672],material:fe}),Me&&e.jsx(I,{position:[0,-.066,.684],center:!0,zIndexRange:[15,0],children:e.jsx("div",{className:"pointer-events-none select-none px-3 py-0.5 bg-gradient-to-b from-[#E5C996] via-[#C8A164] to-[#A67D42] border border-[#F5DFB6]/70 shadow-sm whitespace-nowrap",children:e.jsx("span",{className:"font-serif italic text-[11px] sm:text-xs tracking-[0.14em] text-[#231C14] font-medium block",children:be})})}),e.jsxs("mesh",{position:[0,.001,-.01],rotation:[-Math.PI/2,0,0],children:[e.jsx("ringGeometry",{args:[.29,.38,Se]}),e.jsx("primitive",{object:ee,attach:"material"})]}),e.jsx($,{args:[1.12,.042,1.12],radius:.004,smoothness:2,position:[0,-.151,0],material:X}),e.jsxs("mesh",{position:[0,-.173,0],rotation:[-Math.PI/2,0,0],children:[e.jsx("planeGeometry",{args:[1.86,1.86]}),e.jsx("primitive",{object:Y,attach:"material"})]})]})]})]})},$e=({cameraPreset:P,cameraMoveNonce:D,isMobile:n,onUserOrbitStart:r})=>{const a=o.useRef(null),{camera:l,invalidate:m}=le(),h=o.useRef(!1),W=o.useRef(!1),g=o.useRef(new ae(...H.full.pos)),S=o.useRef(new ae(...H.full.target));return o.useEffect(()=>{!W.current&&a.current&&(a.current.target.set(...H.full.target),a.current.update(),W.current=!0)},[]),o.useEffect(()=>{const b=H[P];g.current.set(...b.pos),S.current.set(...b.target),D>0&&(h.current=!0,m())},[P,D,m]),ne((b,A)=>{if(!h.current||!a.current)return;const x=Math.min(1,A*4.5);l.position.lerp(g.current,x),a.current.target.lerp(S.current,x),a.current.update();const E=l.position.distanceTo(g.current),_=a.current.target.distanceTo(S.current);E<.006&&_<.006?(l.position.copy(g.current),a.current.target.copy(S.current),a.current.update(),h.current=!1):m()}),e.jsx(Te,{ref:a,makeDefault:!0,enablePan:!1,enableZoom:!1,enableDamping:!0,dampingFactor:n?.08:.045,rotateSpeed:n?.85:.75,minPolarAngle:Math.PI/4.2,maxPolarAngle:Math.PI/1.85,onStart:()=>{h.current=!1,r==null||r()}})},Je=()=>e.jsx(I,{center:!0,children:e.jsx("div",{className:"px-5 py-2.5 bg-[#FAF7F2]/95 border border-[#E5DEC9] text-center shadow-sm whitespace-nowrap rounded-full",children:e.jsx("p",{className:"font-serif italic text-sm text-[#8C6D46]",children:"Desvelando escultura..."})})}),ro=({progressRef:P,finishId:D,warmLightOn:n,sanctuaryDark:r,invalidateRef:a,isMobile:l,cameraPreset:m,cameraMoveNonce:h,ultrasoundMode:W,engravedText:g,showHotspots:S,onSelectCameraPreset:b,onUserOrbitStart:A})=>e.jsxs(Ae,{frameloop:"demand",dpr:l?[1,1.25]:[1,1.5],camera:{position:[0,.03,2.95],fov:40},gl:{antialias:!l,alpha:!0,powerPreference:l?"default":"high-performance",toneMapping:Ee,toneMappingExposure:1.04},onCreated:({invalidate:x})=>{a.current=x},style:{touchAction:"pan-y"},className:"cursor-grab active:cursor-grabbing w-full h-full",children:[e.jsx("ambientLight",{intensity:.95,color:"#fffcf8"}),e.jsx("directionalLight",{position:[2.5,3.5,2.5],intensity:1.15,color:"#fffdfa"}),e.jsx(o.Suspense,{fallback:e.jsx(Je,{}),children:e.jsx(Ze,{progressRef:P,finishId:D,warmLightOn:n,sanctuaryDark:r,isMobile:l,cameraPreset:m,ultrasoundMode:W,engravedText:g,showHotspots:S,onSelectCameraPreset:b})}),e.jsx($e,{cameraPreset:m,cameraMoveNonce:h,isMobile:l,onUserOrbitStart:A})]});export{ro as default};
+`,Xe=({progressRef:D,finishId:y,warmLightOn:i,sanctuaryDark:r,isMobile:a,cameraPreset:n,ultrasoundMode:m,engravedText:h})=>{const{gl:P,scene:w,camera:x,invalidate:S}=te(),W=H(ie,U),A=H(ne,U),N=e.useRef(null),E=e.useRef(.95),d=e.useRef(i?1:0),M=e.useRef(r?1:0),T=e.useRef(m?1:0),k=e.useRef(.06),u=L[y],I=e.useMemo(()=>new t(r?u.darkShell:u.lightShell),[u,r]),se=e.useMemo(()=>new t(r?u.darkDeep:u.lightDeep),[u,r]),ce=e.useMemo(()=>new t(r?u.darkRim:u.lightRim),[u,r]),Y=e.useMemo(()=>new t(u.wombGlowColor),[u]),me=e.useMemo(()=>new t(r?"#DED2C1":"#F3ECE1"),[r]),ue=e.useMemo(()=>new t(r?"#BAA995":"#DFD3C2"),[r]),ve=e.useMemo(()=>new t(r?"#70604E":"#9C8A74"),[r]),z=e.useMemo(()=>new C({vertexShader:Fe,fragmentShader:Te,uniforms:{uSkinColor:{value:new t("#F5D5BC")},uSssColor:{value:new t("#F2954E")},uDeepShadowColor:{value:new t("#C49574")},uWarmLight:{value:i?1:0},uUltrasoundMode:{value:m?1:0}},depthWrite:!0,depthTest:!0}),[]),Z=e.useMemo(()=>new C({vertexShader:re,fragmentShader:ke,colorWrite:!1,depthWrite:!0,depthTest:!0,side:Q}),[]),v=e.useMemo(()=>new C({vertexShader:re,fragmentShader:ze,uniforms:{uShellColor:{value:new t(L.porcelain_silk.lightShell)},uDeepColor:{value:new t(L.porcelain_silk.lightDeep)},uRimColor:{value:new t(L.porcelain_silk.lightRim)},uWombGlowColor:{value:new t(L.porcelain_silk.wombGlowColor)},uReveal:{value:.95},uWarmLight:{value:i?1:0},uWombCenterAlpha:{value:L.porcelain_silk.wombCenterAlpha}},transparent:!0,depthWrite:!1,depthTest:!0,depthFunc:Ee,side:Q}),[]),R=e.useMemo(()=>new C({vertexShader:je,fragmentShader:Ve,uniforms:{uStoneLight:{value:new t("#F3ECE1")},uStoneMid:{value:new t("#DFD3C2")},uStonePore:{value:new t("#9C8A74")},uGlowColor:{value:new t("#FFA84C")},uWarmLight:{value:i?1:0},uDarkTheme:{value:r?1:0}}}),[]),K=e.useMemo(()=>new C({vertexShader:Ge,fragmentShader:Be,uniforms:{uWarmLight:{value:i?1:0},uDarkTheme:{value:r?1:0}}}),[]),fe=e.useMemo(()=>new Le({color:new t("#C9A46B"),metalness:.72,roughness:.3}),[]),O=e.useMemo(()=>new C({vertexShader:He,fragmentShader:Ue,uniforms:{uWarmLight:{value:i?1:0},uDarkTheme:{value:r?1:0}},transparent:!0,depthWrite:!1}),[]),$=e.useMemo(()=>new Ae({color:new t("#FFB866"),transparent:!0,opacity:i?.55:0,depthWrite:!1}),[]),J=e.useMemo(()=>new C({vertexShader:Ie,fragmentShader:Ke,uniforms:{uStrength:{value:i&&r?.48:.12}},transparent:!0,depthWrite:!1,blending:ee}),[]),j=e.useMemo(()=>{const s=new Float32Array(108),f=new Float32Array(36),l=new Float32Array(36);for(let c=0;c<36;c++){const _=c*2.39996,F=.52+c*37%100/100*.85,G=-.68+c*53%100/100*1.55;s[c*3]=Math.cos(_)*F,s[c*3+1]=G,s[c*3+2]=Math.sin(_)*F*.72,f[c]=.75+c*19%100/100*1.35,l[c]=c*.42}const b=new Ne;b.setAttribute("position",new q(s,3)),b.setAttribute("aScale",new q(f,1)),b.setAttribute("aPhase",new q(l,1));const V=new C({vertexShader:Oe,fragmentShader:qe,uniforms:{uPhaseShift:{value:.5},uPixelRatio:{value:Math.min(window.devicePixelRatio||1,a?1.25:1.5)},uAlpha:{value:r?.75:.25}},transparent:!0,depthWrite:!1,blending:ee});return{geometry:b,material:V}},[a]),pe=e.useMemo(()=>{const g=A.scene.clone(!0);return g.traverse(s=>{if(s.isMesh){const f=s;f.material=z,f.renderOrder=1}}),g},[A.scene,z]),de=e.useMemo(()=>{const g=W.scene.clone(!0);return g.traverse(s=>{if(s.isMesh){const f=s;f.material=Z,f.renderOrder=2}}),g},[W.scene,Z]),he=e.useMemo(()=>{const g=W.scene.clone(!0);return g.traverse(s=>{if(s.isMesh){const f=s;f.material=v,f.renderOrder=3}}),g},[W.scene,v]);e.useEffect(()=>{P.compile(w,x),S()},[P,w,x,S]),e.useEffect(()=>{S()},[y,i,r,n,m,h,S]),ae((g,s)=>{const l=Math.min(s,.05)*6.5,b=D.current,V=n==="womb"||m?1:.45+Math.min(1,b*1.25)*.55,c=n==="plaque"?0:n==="womb"?.08:p.lerp(-.42,.38,b),_=i?1:0,F=r?1:0,G=m?1:0;E.current=p.lerp(E.current,V,l),k.current=p.lerp(k.current,c,l),d.current=p.lerp(d.current,_,l),M.current=p.lerp(M.current,F,l),T.current=p.lerp(T.current,G,l),N.current&&(N.current.rotation.y=k.current),v.uniforms.uReveal.value=E.current,v.uniforms.uWarmLight.value=d.current,v.uniforms.uShellColor.value.lerp(I,l),v.uniforms.uDeepColor.value.lerp(se,l),v.uniforms.uRimColor.value.lerp(ce,l),v.uniforms.uWombGlowColor.value.lerp(Y,l),v.uniforms.uWombCenterAlpha.value=p.lerp(v.uniforms.uWombCenterAlpha.value,u.wombCenterAlpha,l),z.uniforms.uWarmLight.value=d.current,z.uniforms.uUltrasoundMode.value=T.current,R.uniforms.uStoneLight.value.lerp(me,l),R.uniforms.uStoneMid.value.lerp(ue,l),R.uniforms.uStonePore.value.lerp(ve,l),R.uniforms.uGlowColor.value.lerp(Y,l),R.uniforms.uWarmLight.value=d.current,R.uniforms.uDarkTheme.value=M.current,K.uniforms.uWarmLight.value=d.current,K.uniforms.uDarkTheme.value=M.current,O.uniforms.uWarmLight.value=d.current,O.uniforms.uDarkTheme.value=M.current,$.opacity=p.lerp(0,.55,d.current),J.uniforms.uStrength.value=p.lerp(.08,.52,M.current)*p.lerp(.2,1,d.current),j.material.uniforms.uPhaseShift.value=b,j.material.uniforms.uAlpha.value=p.lerp(.18,.85,M.current)*p.lerp(.35,1,d.current);const Me=Math.abs(V-E.current),be=Math.abs(c-k.current),Ce=Math.abs(_-d.current),ye=Math.abs(F-M.current),Pe=Math.abs(G-T.current),Re=Math.abs(v.uniforms.uShellColor.value.r-I.r)+Math.abs(v.uniforms.uShellColor.value.g-I.g);(Me>.002||be>.002||Ce>.002||ye>.002||Pe>.002||Re>.003)&&S()});const ge=a?2:4,we=a?40:64,xe=h.trim()||"EMILIANO · SEMANA 28",Se=h.trim().length>0||n==="plaque";return o.jsxs(o.Fragment,{children:[o.jsxs("mesh",{position:[0,-.02,-.72],renderOrder:0,children:[o.jsx("planeGeometry",{args:[2.8,3.2]}),o.jsx("primitive",{object:J,attach:"material"})]}),o.jsx("points",{geometry:j.geometry,material:j.material,renderOrder:4}),o.jsxs("group",{ref:N,position:[0,-.62,0],scale:.8,rotation:[0,.06,0],children:[o.jsx("group",{position:[-.01,.21,.095],scale:.275,children:o.jsx("primitive",{object:pe})}),o.jsx("primitive",{object:de,position:[0,0,0],scale:1}),o.jsx("primitive",{object:he,position:[0,0,0],scale:1}),o.jsxs("group",{position:[0,0,.01],children:[o.jsx(X,{args:[1.34,.132,1.34],radius:.008,smoothness:ge,position:[0,-.066,0],material:R}),o.jsx(X,{args:[.56,.048,.014],radius:.002,smoothness:2,position:[0,-.066,.672],material:fe}),Se&&o.jsx(le,{position:[0,-.066,.684],center:!0,zIndexRange:[15,0],children:o.jsx("div",{className:"pointer-events-none select-none px-3 py-0.5 bg-gradient-to-b from-[#E5C996] via-[#C8A164] to-[#A67D42] border border-[#F5DFB6]/70 shadow-sm whitespace-nowrap",children:o.jsx("span",{className:"font-serif italic text-[11px] sm:text-xs tracking-[0.14em] text-[#231C14] font-medium block",children:xe})})}),o.jsxs("mesh",{position:[0,.001,-.01],rotation:[-Math.PI/2,0,0],children:[o.jsx("ringGeometry",{args:[.29,.38,we]}),o.jsx("primitive",{object:$,attach:"material"})]}),o.jsx(X,{args:[1.12,.042,1.12],radius:.004,smoothness:2,position:[0,-.151,0],material:K}),o.jsxs("mesh",{position:[0,-.173,0],rotation:[-Math.PI/2,0,0],children:[o.jsx("planeGeometry",{args:[1.86,1.86]}),o.jsx("primitive",{object:O,attach:"material"})]})]})]})]})},Ye=({cameraPreset:D,cameraMoveNonce:y,isMobile:i,onUserOrbitStart:r})=>{const a=e.useRef(null),{camera:n,invalidate:m}=te(),h=e.useRef(!1),P=e.useRef(!1),w=e.useRef(new oe(...B.full.pos)),x=e.useRef(new oe(...B.full.target));return e.useEffect(()=>{!P.current&&a.current&&(a.current.target.set(...B.full.target),a.current.update(),P.current=!0)},[]),e.useEffect(()=>{const S=B[D];w.current.set(...S.pos),x.current.set(...S.target),y>0&&(h.current=!0,m())},[D,y,m]),ae((S,W)=>{if(!h.current||!a.current)return;const A=Math.min(1,W*4.5);n.position.lerp(w.current,A),a.current.target.lerp(x.current,A),a.current.update();const N=n.position.distanceTo(w.current),E=a.current.target.distanceTo(x.current);N<.006&&E<.006?(n.position.copy(w.current),a.current.target.copy(x.current),a.current.update(),h.current=!1):m()}),o.jsx(_e,{ref:a,makeDefault:!0,enablePan:!1,enableZoom:!1,enableDamping:!0,dampingFactor:i?.08:.045,rotateSpeed:i?.85:.75,minPolarAngle:Math.PI/4.2,maxPolarAngle:Math.PI/1.85,onStart:()=>{h.current=!1,r==null||r()}})},Ze=()=>o.jsx(le,{center:!0,children:o.jsx("div",{className:"px-5 py-2.5 bg-[#FAF7F2]/95 border border-[#E5DEC9] text-center shadow-sm whitespace-nowrap rounded-full",children:o.jsx("p",{className:"font-serif italic text-sm text-[#8C6D46]",children:"Desvelando escultura..."})})}),eo=({progressRef:D,finishId:y,warmLightOn:i,sanctuaryDark:r,invalidateRef:a,isMobile:n,cameraPreset:m,cameraMoveNonce:h,ultrasoundMode:P,engravedText:w})=>o.jsxs(De,{frameloop:"demand",dpr:n?[1,1.25]:[1,1.5],camera:{position:[0,.03,2.95],fov:40},gl:{antialias:!n,alpha:!0,powerPreference:n?"default":"high-performance",toneMapping:We,toneMappingExposure:1.04},onCreated:({invalidate:x})=>{a.current=x},style:{touchAction:"pan-y"},className:"cursor-grab active:cursor-grabbing w-full h-full",children:[o.jsx("ambientLight",{intensity:.95,color:"#fffcf8"}),o.jsx("directionalLight",{position:[2.5,3.5,2.5],intensity:1.15,color:"#fffdfa"}),o.jsx(e.Suspense,{fallback:o.jsx(Ze,{}),children:o.jsx(Xe,{progressRef:D,finishId:y,warmLightOn:i,sanctuaryDark:r,isMobile:n,cameraPreset:m,ultrasoundMode:P,engravedText:w})}),o.jsx(Ye,{cameraPreset:m,cameraMoveNonce:h,isMobile:n})]});export{eo as default};
