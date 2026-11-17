@@ -1,6 +1,6 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useId, useRef, useState } from 'react';
 import { z } from 'zod';
-import { Check, Upload, X } from 'lucide-react';
+import { Check, Sparkles, Upload, X } from 'lucide-react';
 import { useProductStore } from '../store/useProductStore';
 import {
   EDITION_PORTRAIT_IMAGES,
@@ -10,6 +10,9 @@ import {
 } from '../data/products';
 import { FINISH_PRESETS } from '../data/finishes';
 import { ProductTierId } from '../types/product';
+import type { CameraPresetId } from './SculptureStage3D';
+
+const SculptureStage3D = lazy(() => import('./SculptureStage3D'));
 
 const orderFormSchema = z.object({
   motherName: z.string().min(2, 'Ingresa tu nombre'),
@@ -31,10 +34,17 @@ const WIZARD_STEPS: { id: WizardStep; code: string; label: string; mobileLabel: 
 const TIER_CONCISE_TAGLINE: Record<ProductTierId, string> = {
   1: 'Alabastro sin luz LED',
   2: 'Travertino · LED 2700K',
-  3: 'Silueta a medida + LED',
+  3: 'Silueta a medida + LED + Placa',
 };
 
+const MODAL_CAMERA_VIEWS: { id: CameraPresetId; label: string; mobileLabel: string }[] = [
+  { id: 'full', label: 'Completa', mobileLabel: 'Completa' },
+  { id: 'womb', label: 'Zoom Bebé', mobileLabel: 'Bebé' },
+  { id: 'plaque', label: 'Placa', mobileLabel: 'Placa' },
+];
+
 interface OrderWizardContentProps {
+  isOpen: boolean;
   step: WizardStep;
   setStep: React.Dispatch<React.SetStateAction<WizardStep>>;
   formErrors: Record<string, string>;
@@ -43,6 +53,7 @@ interface OrderWizardContentProps {
 }
 
 const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
+  isOpen,
   step,
   setStep,
   formErrors,
@@ -71,8 +82,52 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
 
   const [copiedVaca, setCopiedVaca] = useState(false);
   const [fetusPreviewUrl, setFetusPreviewUrl] = useState<string | null>(null);
+  const [modalSanctuaryDark, setModalSanctuaryDark] = useState<boolean>(selectedTier !== 1);
+  const [cameraPreset, setCameraPreset] = useState<CameraPresetId>('full');
+  const [cameraMoveNonce, setCameraMoveNonce] = useState<number>(0);
+  const [ultrasoundMode, setUltrasoundMode] = useState<boolean>(false);
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean>(false);
   const fetusInputRef = useRef<HTMLInputElement>(null);
   const motherInputRef = useRef<HTMLInputElement>(null);
+  const progressRef = useRef<number>(0.35);
+  const invalidateRef = useRef<(() => void) | null>(null);
+  const prevOpenRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const sync = () => setIsMobileViewport(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && !prevOpenRef.current) {
+      setModalSanctuaryDark(selectedTier !== 1);
+      setCameraPreset('full');
+      setUltrasoundMode(false);
+    }
+    prevOpenRef.current = isOpen;
+  }, [isOpen, selectedTier]);
+
+  const selectCameraPreset = (preset: CameraPresetId) => {
+    setCameraPreset(preset);
+    setCameraMoveNonce((n) => n + 1);
+  };
+
+  const handleToggleUltrasound = () => {
+    setUltrasoundMode((prev) => {
+      const next = !prev;
+      selectCameraPreset(next ? 'womb' : 'full');
+      return next;
+    });
+  };
+
+  const handleSelectTier = (tierId: ProductTierId) => {
+    setTier(tierId);
+    setModalSanctuaryDark(tierId !== 1);
+    selectCameraPreset('full');
+  };
 
   useEffect(() => {
     if (!uploadedFetusFile || !uploadedFetusFile.type.startsWith('image/')) {
@@ -95,6 +150,14 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
     ? `${customerData.babyName.trim()} · Semana ${customerData.weeks}`
     : 'Emiliano · Semana 28';
   const livePlaqueText = customerData.plaqueText.trim() || suggestedPlaque;
+  const effectiveSanctuaryDark = selectedTier !== 1 && modalSanctuaryDark;
+  const stageEngravedText =
+    selectedTier === 3
+      ? customerData.plaqueText.trim() ||
+        (customerData.babyName.trim()
+          ? `${customerData.babyName.trim().toUpperCase()} · SEMANA ${customerData.weeks}`
+          : 'EMILIANO · SEMANA 28')
+      : customerData.plaqueText.trim();
 
   const clearFieldError = (field: string) => {
     if (formErrors[field]) {
@@ -237,11 +300,11 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
   return (
     <div className="bg-[#FAF7F2] border border-[#E5DEC9] shadow-2xl relative flex flex-col">
       {/* Sticky Wizard Top Bar: Title + Close + 4-Step Interactive Progress */}
-      <div className="px-5 pt-5 pb-4 sm:px-8 sm:pt-6 sm:pb-5 border-b border-[#E5DEC9] bg-[#FAF7F2]">
+      <div className="px-4 pt-4 pb-3 sm:px-7 sm:pt-4 sm:pb-3.5 border-b border-[#E5DEC9] bg-[#FAF7F2]">
         <div className="flex items-start justify-between gap-4">
           <div>
             <span className="eyebrow block">Atelier Bogotá · Encargo Guiado</span>
-            <h3 className="font-serif text-2xl sm:text-3xl font-light text-[#2C2825] mt-0.5">
+            <h3 className="font-serif text-xl sm:text-2xl font-light text-[#2C2825] mt-0.5">
               Reserva tu <em className="italic text-[#8C6D46]">escultura.</em>
             </h3>
           </div>
@@ -250,14 +313,14 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Cerrar ventana"
-            className="w-9 h-9 shrink-0 border border-[#E5DEC9] hover:border-[#2C2825] flex items-center justify-center text-[#2C2825] transition-colors bg-[#FAF7F2]"
+            className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 border border-[#E5DEC9] hover:border-[#2C2825] flex items-center justify-center text-[#2C2825] transition-colors bg-[#FAF7F2]"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* 4-Step Connected Progress Indicator */}
-        <nav aria-label="Pasos de reserva" className="mt-5 grid grid-cols-4 gap-1.5 sm:gap-3">
+        <nav aria-label="Pasos de reserva" className="mt-3 sm:mt-3.5 grid grid-cols-4 gap-1.5 sm:gap-3">
           {WIZARD_STEPS.map((item) => {
             const isActive = item.id === step;
             const isDone = item.id < step;
@@ -316,144 +379,328 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
         </nav>
       </div>
 
-      <form onSubmit={handleFormSubmit} className="p-5 sm:p-8 space-y-6">
+      <form onSubmit={handleFormSubmit} className="p-4 sm:px-7 sm:py-5 space-y-5">
         {/* ================================================================= */}
-        {/* STEP 1: VISUAL EDITION SELECTOR (WITH PHOTOS) & RESIN FINISH      */}
+        {/* STEP 1: INTERACTIVE 3D STAGE + ONE-TAP EDITION & RESIN CONSOLE     */}
         {/* ================================================================= */}
         {step === 1 && (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <span className="eyebrow block">Elige tu edición</span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                {PRODUCT_TIERS.map((tier) => {
-                  const isActive = selectedTier === tier.id;
-                  return (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
+              {/* Left / Top Column: Single Live Interactive 3D Viewport */}
+              <div
+                className={`lg:col-span-6 relative h-[235px] sm:h-[290px] lg:h-full lg:min-h-[345px] border overflow-hidden transition-colors duration-300 ${
+                  effectiveSanctuaryDark
+                    ? 'bg-sanctuary-radial border-[#D4B07B]/35'
+                    : 'bg-[#F2ECE1]/75 border-[#E5DEC9]'
+                }`}
+                style={{ touchAction: 'pan-y' }}
+              >
+                {/* Top HUD: Camera Presets + Eco 3D + Sanctuary Atmosphere */}
+                <div className="absolute top-2 inset-x-2 sm:top-2.5 sm:inset-x-2.5 z-10 flex items-center justify-between gap-1 pointer-events-none">
+                  <div
+                    className={`pointer-events-auto inline-flex items-center p-0.5 rounded-full border backdrop-blur-md transition-colors ${
+                      effectiveSanctuaryDark
+                        ? 'glass-dock-dark'
+                        : 'bg-[#FAF7F2]/90 border-[#E5DEC9] shadow-sm'
+                    }`}
+                  >
+                    {MODAL_CAMERA_VIEWS.map((view) => {
+                      const active = cameraPreset === view.id;
+                      return (
+                        <button
+                          key={view.id}
+                          type="button"
+                          onClick={() => selectCameraPreset(view.id)}
+                          aria-pressed={active}
+                          className={`px-1.5 sm:px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.06em] sm:tracking-[0.12em] transition-colors whitespace-nowrap ${
+                            active
+                              ? effectiveSanctuaryDark
+                                ? 'bg-[#D4B07B] text-[#120E0C] font-medium'
+                                : 'bg-[#2C2825] text-[#FAF7F2] font-medium'
+                              : effectiveSanctuaryDark
+                                ? 'text-[#E8DFD3] hover:text-white'
+                                : 'text-[#6E665E] hover:text-[#2C2825]'
+                          }`}
+                        >
+                          <span className="sm:hidden">{view.mobileLabel}</span>
+                          <span className="hidden sm:inline">{view.label}</span>
+                        </button>
+                      );
+                    })}
+
+                    <span
+                      className={`h-3 w-[1px] mx-0.5 sm:mx-1 ${
+                        effectiveSanctuaryDark ? 'bg-[#3D352E]' : 'bg-[#E5DEC9]'
+                      }`}
+                    />
+
                     <button
-                      key={tier.id}
                       type="button"
-                      aria-pressed={isActive}
-                      onClick={() => setTier(tier.id as ProductTierId)}
-                      className={`group text-left border transition-all overflow-hidden flex sm:flex-col relative ${
-                        isActive
-                          ? 'border-2 border-[#8C6D46] bg-[#FFFFFF] shadow-sm'
-                          : 'border-[#E5DEC9] bg-[#F2ECE1]/45 hover:border-[#8C6D46]/60'
+                      onClick={handleToggleUltrasound}
+                      aria-pressed={ultrasoundMode}
+                      className={`px-1.5 sm:px-2 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.06em] sm:tracking-[0.12em] inline-flex items-center gap-0.5 sm:gap-1 transition-colors whitespace-nowrap ${
+                        ultrasoundMode
+                          ? 'bg-[#C49658] text-[#120E0C] font-medium'
+                          : effectiveSanctuaryDark
+                            ? 'text-[#D4B07B] hover:text-[#F3DFB8]'
+                            : 'text-[#8C6D46] hover:text-[#2C2825]'
                       }`}
                     >
-                      {tier.id === 2 && (
-                        <span className="absolute top-2 left-2 z-10 bg-[#2C2825] text-[#FAF7F2] px-2 py-0.5 text-[9px] uppercase tracking-[0.16em]">
-                          ★ Más Elegida
-                        </span>
-                      )}
-
-                      {isActive && (
-                        <span className="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-[#8C6D46] text-[#FAF7F2] flex items-center justify-center shadow-sm">
-                          <Check className="w-3.5 h-3.5" aria-hidden="true" />
-                        </span>
-                      )}
-
-                      <div className="w-28 sm:w-full aspect-[4/4] sm:aspect-[4/3] shrink-0 bg-[#E5DEC9]/40 overflow-hidden">
-                        <img
-                          src={EDITION_PORTRAIT_IMAGES[tier.id]}
-                          alt={tier.name}
-                          decoding="async"
-                          width={480}
-                          height={360}
-                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                        />
-                      </div>
-
-                      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-center sm:justify-between space-y-1">
-                        <div>
-                          <span className="font-serif text-lg sm:text-xl text-[#2C2825] block leading-snug">
-                            {tier.name}
-                          </span>
-                          <span className="text-[11px] text-[#6E665E] font-light block mt-0.5">
-                            {TIER_CONCISE_TAGLINE[tier.id]}
-                          </span>
-                        </div>
-                        <span className="font-serif italic text-lg text-[#8C6D46] block pt-1">
-                          {tier.id === 3 ? 'Desde ' : ''}
-                          {formatCOP(tier.officialPrice)}
-                        </span>
-                      </div>
+                      <Sparkles className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />
+                      <span>Eco 3D</span>
                     </button>
-                  );
-                })}
-              </div>
-            </div>
+                  </div>
 
-            {selectedTier === 3 && (
-              <div className="p-3.5 bg-[#F2ECE1] border border-[#E5DEC9] flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs text-[#2C2825]">Modalidad de silueta materna:</span>
-                <div className="inline-flex border border-[#E5DEC9] bg-[#FAF7F2] text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setTier3Modality('photo_guide')}
-                    className={`px-3 py-1.5 ${
-                      tier3Modality === 'photo_guide'
-                        ? 'bg-[#2C2825] text-[#FAF7F2]'
-                        : 'text-[#6E665E]'
-                    }`}
-                  >
-                    Fotos guía ($690.000)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTier3Modality('presencial_scan')}
-                    className={`px-3 py-1.5 ${
-                      tier3Modality === 'presencial_scan'
-                        ? 'bg-[#2C2825] text-[#FAF7F2]'
-                        : 'text-[#6E665E]'
-                    }`}
-                  >
-                    Escaneo Bogotá ($780.000)
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Resin Finish Selector with Real Gradient Spheres */}
-            <div className="space-y-3">
-              <span className="eyebrow block">Elige el acabado en resina</span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {FINISH_OPTIONS.map((finish) => {
-                  const preset = FINISH_PRESETS[finish.id];
-                  const isActive = activeFinish === finish.id;
-                  return (
+                  {selectedTier !== 1 && (
                     <button
-                      key={finish.id}
                       type="button"
-                      aria-pressed={isActive}
-                      onClick={() => setFinish(finish.id)}
-                      className={`p-3 border text-left flex items-center gap-3 transition-colors ${
-                        isActive
-                          ? 'bg-[#F2ECE1] border-[#8C6D46]'
-                          : 'bg-[#FAF7F2] border-[#E5DEC9] hover:border-[#8C6D46]/60'
+                      onClick={() => setModalSanctuaryDark((v) => !v)}
+                      aria-label={
+                        modalSanctuaryDark
+                          ? 'Cambiar a iluminación de día'
+                          : 'Activar Santuario Nocturno 2700K'
+                      }
+                      className={`pointer-events-auto shrink-0 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full border text-[10px] font-serif italic transition-colors whitespace-nowrap backdrop-blur-md ${
+                        effectiveSanctuaryDark
+                          ? 'glass-dock-dark text-[#FFB866]'
+                          : 'bg-[#FAF7F2]/90 border-[#E5DEC9] text-[#6E665E] hover:text-[#2C2825] shadow-sm'
                       }`}
                     >
                       <span
-                        className="w-7 h-7 rounded-full shrink-0 shadow-inner"
-                        style={{
-                          background: preset.swatchGradient,
-                          border: `1px solid ${preset.swatchBorder}`,
-                        }}
+                        className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
+                          effectiveSanctuaryDark
+                            ? 'bg-[#FFB866] shadow-[0_0_8px_#FFA84C]'
+                            : 'bg-[#2C2825]'
+                        }`}
                       />
-                      <div className="min-w-0">
-                        <span className="font-serif text-base text-[#2C2825] block leading-tight">
-                          {finish.name}
-                        </span>
-                        <span className="text-[11px] text-[#6E665E] font-light block truncate">
-                          {finish.subtitle}
+                      <span>{effectiveSanctuaryDark ? 'Noche' : 'Día'}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Single Shared WebGL Stage (Mounted Only While Modal Step 1 is Active) */}
+                {isOpen && step === 1 && (
+                  <Suspense
+                    fallback={
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span
+                          className={`px-4 py-1.5 rounded-full text-xs font-serif italic border ${
+                            effectiveSanctuaryDark
+                              ? 'glass-dock-dark text-[#D4B07B]'
+                              : 'bg-[#FAF7F2]/95 border-[#E5DEC9] text-[#8C6D46]'
+                          }`}
+                        >
+                          Cargando escultura 3D...
                         </span>
                       </div>
-                    </button>
-                  );
-                })}
+                    }
+                  >
+                    <SculptureStage3D
+                      progressRef={progressRef}
+                      finishId={activeFinish}
+                      warmLightOn={selectedTier !== 1}
+                      sanctuaryDark={effectiveSanctuaryDark}
+                      invalidateRef={invalidateRef}
+                      isMobile={isMobileViewport}
+                      cameraPreset={cameraPreset}
+                      cameraMoveNonce={cameraMoveNonce}
+                      ultrasoundMode={ultrasoundMode}
+                      engravedText={stageEngravedText}
+                    />
+                  </Suspense>
+                )}
+
+                {/* Bottom HUD: Live Active Combination + Orbit Hint */}
+                <div className="pointer-events-none absolute bottom-2 inset-x-2.5 z-10 flex items-center justify-between gap-2">
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] border truncate max-w-[66%] backdrop-blur-md ${
+                      effectiveSanctuaryDark
+                        ? 'glass-dock-dark text-[#EAE2D6]'
+                        : 'bg-[#FAF7F2]/90 border-[#E5DEC9] text-[#2C2825] shadow-sm'
+                    }`}
+                  >
+                    {currentTier.name} · {currentFinish.name}
+                  </span>
+                  <span
+                    className={`font-serif italic text-[10px] shrink-0 px-2 py-0.5 rounded-full ${
+                      effectiveSanctuaryDark
+                        ? 'text-[#D4B07B] bg-[#120E0C]/45'
+                        : 'text-[#6E665E] bg-[#FAF7F2]/75'
+                    }`}
+                  >
+                    Arrastra 360° ↔
+                  </span>
+                </div>
+              </div>
+
+              {/* Right / Bottom Column: Fast One-Tap Edition & Resin Console */}
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
+                {/* 01 · Edition Selector */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="eyebrow">01 · Elige tu edición</span>
+                    <span className="text-[11px] text-[#8C6D46] font-serif italic">
+                      {selectedTier === 1 ? 'Luz natural sin LED' : 'Incluye LED 2700K'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {PRODUCT_TIERS.map((tier) => {
+                      const isActive = selectedTier === tier.id;
+                      return (
+                        <button
+                          key={tier.id}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => handleSelectTier(tier.id as ProductTierId)}
+                          className={`w-full text-left flex items-center gap-2.5 sm:gap-3 p-2.5 border transition-all relative ${
+                            isActive
+                              ? 'border-2 border-[#8C6D46] bg-[#FFFFFF] shadow-sm'
+                              : 'border-[#E5DEC9] bg-[#F2ECE1]/45 hover:border-[#8C6D46]/60'
+                          }`}
+                        >
+                          <div className="relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 border border-[#E5DEC9] bg-[#E5DEC9]/30 overflow-hidden">
+                            <img
+                              src={EDITION_PORTRAIT_IMAGES[tier.id]}
+                              alt={tier.name}
+                              decoding="async"
+                              width={128}
+                              height={128}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-serif text-[15px] sm:text-lg text-[#2C2825] leading-tight">
+                                {tier.name}
+                              </span>
+                              {tier.id === 2 && (
+                                <span className="bg-[#2C2825] text-[#FAF7F2] px-1.5 py-0.5 text-[8px] uppercase tracking-[0.12em] leading-none">
+                                  ★ Más Elegida
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-[#6E665E] font-light block leading-snug mt-0.5">
+                              {TIER_CONCISE_TAGLINE[tier.id]}
+                            </span>
+                          </div>
+
+                          <div className="text-right shrink-0 flex items-center gap-2">
+                            <span className="font-serif italic text-sm sm:text-base text-[#8C6D46]">
+                              {tier.id === 3 ? 'Desde ' : ''}
+                              {formatCOP(tier.officialPrice)}
+                            </span>
+                            <span
+                              className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                                isActive
+                                  ? 'bg-[#8C6D46] border-[#8C6D46] text-[#FAF7F2]'
+                                  : 'bg-[#FAF7F2] border-[#D8CBB8] text-transparent'
+                              }`}
+                            >
+                              <Check className="w-3 h-3" aria-hidden="true" />
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Tier 3 Modality + Live Brass Plaque Preview */}
+                {selectedTier === 3 && (
+                  <div className="p-2.5 sm:p-3 bg-[#F2ECE1] border border-[#E5DEC9] space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs text-[#2C2825]">Silueta materna:</span>
+                      <div className="inline-flex border border-[#E5DEC9] bg-[#FAF7F2] text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => setTier3Modality('photo_guide')}
+                          className={`px-2.5 py-1 transition-colors ${
+                            tier3Modality === 'photo_guide'
+                              ? 'bg-[#2C2825] text-[#FAF7F2]'
+                              : 'text-[#6E665E]'
+                          }`}
+                        >
+                          Fotos guía ($690.000)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTier3Modality('presencial_scan')}
+                          className={`px-2.5 py-1 transition-colors ${
+                            tier3Modality === 'presencial_scan'
+                              ? 'bg-[#2C2825] text-[#FAF7F2]'
+                              : 'text-[#6E665E]'
+                          }`}
+                        >
+                          Escaneo Bogotá ($780.000)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor="wizard-step1-plaque"
+                        className="text-[11px] text-[#6E665E] shrink-0"
+                      >
+                        Placa:
+                      </label>
+                      <input
+                        id="wizard-step1-plaque"
+                        type="text"
+                        maxLength={34}
+                        placeholder="Ej. Emiliano · Semana 28"
+                        value={customerData.plaqueText}
+                        onFocus={() => selectCameraPreset('plaque')}
+                        onChange={(e) => updateCustomerData({ plaqueText: e.target.value })}
+                        className="flex-1 min-w-0 px-2.5 py-1 text-xs bg-[#FAF7F2] border border-[#E5DEC9] text-[#2C2825] placeholder:text-[#8E8377] focus:outline-none focus:border-[#8C6D46]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 02 · Resin Finish Swatches */}
+                <div className="space-y-2">
+                  <span className="eyebrow block">02 · Acabado en resina</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {FINISH_OPTIONS.map((finish) => {
+                      const preset = FINISH_PRESETS[finish.id];
+                      const isActive = activeFinish === finish.id;
+                      return (
+                        <button
+                          key={finish.id}
+                          type="button"
+                          aria-pressed={isActive}
+                          onClick={() => setFinish(finish.id)}
+                          className={`p-2 sm:p-2.5 border text-center flex flex-col items-center justify-center transition-all ${
+                            isActive
+                              ? 'bg-[#F2ECE1] border-2 border-[#8C6D46] shadow-sm'
+                              : 'bg-[#FAF7F2] border-[#E5DEC9] hover:border-[#8C6D46]/60'
+                          }`}
+                        >
+                          <span
+                            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-inner mb-1"
+                            style={{
+                              background: preset.swatchGradient,
+                              border: `1px solid ${preset.swatchBorder}`,
+                            }}
+                          />
+                          <span className="font-serif text-[12px] sm:text-sm text-[#2C2825] block leading-tight">
+                            {finish.name}
+                          </span>
+                          <span className="text-[10px] text-[#6E665E] font-light block leading-tight mt-0.5 line-clamp-1">
+                            {finish.subtitle}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Step 1 Footer */}
-            <div className="pt-4 border-t border-[#E5DEC9] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="pt-3.5 border-t border-[#E5DEC9] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-xs text-[#6E665E]">
                 Reserva hoy con 50%:{' '}
                 <strong className="font-serif italic text-lg text-[#8C6D46] font-normal ml-1">
@@ -463,7 +710,7 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
 
               <button
                 type="submit"
-                className="px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] text-[#FAF7F2] bg-[#2C2825] hover:bg-[#8C6D46] transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
+                className="px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-[#FAF7F2] bg-[#2C2825] hover:bg-[#8C6D46] transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <span>Continuar a Ecografía 3D</span>
                 <span>→</span>
@@ -1008,13 +1255,14 @@ export const OrderUploaderModal: React.FC = () => {
       ref={dialogRef}
       closedby="any"
       aria-labelledby={titleId}
-      className="w-[calc(100%-1.5rem)] sm:w-full max-w-3xl bg-transparent p-0 m-auto backdrop:bg-[#120E0C]/75 backdrop:backdrop-blur-sm open:block"
+      className="w-[calc(100%-1.5rem)] sm:w-full max-w-4xl bg-transparent p-0 m-auto backdrop:bg-[#120E0C]/75 backdrop:backdrop-blur-sm open:block"
     >
       <h2 id={titleId} className="sr-only">
         Reserva de Obra Maternidad 3D
       </h2>
       <div className="max-h-[90dvh] overflow-y-auto">
         <OrderWizardContent
+          isOpen={isOrderModalOpen}
           step={step}
           setStep={setStep}
           formErrors={formErrors}

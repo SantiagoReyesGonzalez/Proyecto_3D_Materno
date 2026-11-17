@@ -47,6 +47,7 @@ export const SculptureViewer3D: React.FC = () => {
     updateCustomerData,
     getEffectivePrice,
     openOrderModal,
+    isOrderModalOpen,
   } = useProductStore();
 
   const [sanctuaryDark, setSanctuaryDark] = useState(true);
@@ -514,7 +515,7 @@ export const SculptureViewer3D: React.FC = () => {
               <div className="pointer-events-auto">{renderCameraToolbar()}</div>
             </div>
 
-            {shouldMount3D ? (
+            {shouldMount3D && !isOrderModalOpen ? (
               <Suspense fallback={<StagePlaceholder dark={sanctuaryDark} />}>
                 <SculptureStage3D
                   progressRef={progressRef}
