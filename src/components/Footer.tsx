@@ -13,12 +13,12 @@ export const Footer: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-8 text-[11px] uppercase tracking-[0.22em] text-[#6E665E]">
-          <a href="#el-atelier" className="hover:text-[#2C2825] transition-colors">
-            El Atelier
-          </a>
+        <div className="flex flex-wrap justify-center gap-8 text-[11px] uppercase tracking-[0.22em] text-[#6E665E]">
           <a href="#visor-3d" className="hover:text-[#2C2825] transition-colors">
             Estudio 3D
+          </a>
+          <a href="#el-atelier" className="hover:text-[#2C2825] transition-colors">
+            El Atelier
           </a>
           <a href="#catalogo-tiers" className="hover:text-[#2C2825] transition-colors">
             Colección

@@ -1,8 +1,20 @@
 import React, { Suspense, useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, RoundedBox, useGLTF, Html } from '@react-three/drei';
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { FINISH_PRESETS, ResinFinishId } from '../data/finishes';
+
+export type CameraPresetId = 'full' | 'womb' | 'plaque';
+
+const CAMERA_PRESETS: Record<
+  CameraPresetId,
+  { pos: [number, number, number]; target: [number, number, number] }
+> = {
+  full: { pos: [0, 0.03, 2.95], target: [0, -0.02, 0] },
+  womb: { pos: [0.1, -0.14, 1.38], target: [-0.01, -0.2, 0.14] },
+  plaque: { pos: [0, -0.44, 1.56], target: [0, -0.66, 0.42] },
+};
 
 const DRACO_URL = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/';
 const MADRE_MODEL_URL = `${import.meta.env.BASE_URL}models/Madre.glb`;
@@ -13,7 +25,6 @@ useGLTF.preload(BEBE_MODEL_URL, DRACO_URL);
 
 // ============================================================================
 // 1. BABY SUBSURFACE SCATTERING (SSS) SHADER
-// Soft, warm peach-ivory organic tone with gentle 2700K internal scatter
 // ============================================================================
 const BABY_VERTEX_SHADER = /* glsl */ `
   varying vec3 vNormalWorld;
@@ -184,7 +195,7 @@ const MOTHER_FRAGMENT_SHADER = /* glsl */ `
 `;
 
 // ============================================================================
-// 3. ARCHITECTURAL ROMAN TRAVERTINE SLAB SHADER (Mobile-GPU Optimized: 2x fewer ALU ops)
+// 3. ARCHITECTURAL ROMAN TRAVERTINE SLAB SHADER
 // ============================================================================
 const TRAVERTINE_VERTEX_SHADER = /* glsl */ `
   varying vec3 vLocalPos;
@@ -244,13 +255,11 @@ const TRAVERTINE_FRAGMENT_SHADER = /* glsl */ `
     vec3 N = normalize(vNormalWorld);
     vec3 V = normalize(vViewDir);
 
-    // 1. Horizontal Sedimentary Bedding Veins (1 trilinear lookup + analytical harmonics)
     vec3 veinCoord = vec3(vLocalPos.x * 3.6, vLocalPos.y * 34.0, vLocalPos.z * 3.6);
     float n1 = noise3(veinCoord);
     float veins = sin(vLocalPos.y * 68.0 + n1 * 5.2 + sin(vLocalPos.x * 9.0 + n1 * 3.1) * 1.1) * 0.5 + 0.5;
     float fineGrain = fract(sin(dot(floor(vLocalPos * 140.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
 
-    // 2. Natural Capillary Travertine Pores (2 trilinear lookups instead of 4)
     vec3 poreCoord = vec3(vLocalPos.x * 34.0, vLocalPos.y * 145.0, vLocalPos.z * 34.0);
     float poreCoarse = noise3(poreCoord);
     float poreFine = noise3(poreCoord * 2.3 + vec3(2.3, 5.1, 1.9));
@@ -264,7 +273,6 @@ const TRAVERTINE_FRAGMENT_SHADER = /* glsl */ `
     vec3 stoneColor = mix(uStoneMid, uStoneLight, veins * 0.68 + fineGrain * 0.32);
     stoneColor = mix(stoneColor, uStonePore, poreMask * 0.68);
 
-    // 3. Architectural Studio Lighting & Bevel Highlight
     vec3 keyDir = normalize(vec3(0.45, 0.72, 0.68));
     vec3 fillDir = normalize(vec3(-0.60, 0.48, 0.52));
     float diffKey = clamp(dot(N, keyDir), 0.0, 1.0);
@@ -278,7 +286,6 @@ const TRAVERTINE_FRAGMENT_SHADER = /* glsl */ `
     float bevelSpec = pow(max(dot(N, H), 0.0), 32.0) * 0.12 * (1.0 - poreMask);
     color += vec3(1.0, 0.98, 0.94) * bevelSpec;
 
-    // 4. Embedded 2700K Up-Light on Top Face
     if (vNormalLocal.y > 0.1) {
       float radialDist = length(vLocalPos.xz * vec2(1.0, 1.18));
       float upLightRing = exp(-pow((radialDist - 0.33) * 5.8, 2.0));
@@ -287,7 +294,6 @@ const TRAVERTINE_FRAGMENT_SHADER = /* glsl */ `
       color += uGlowColor * topGlow * mix(0.38, 0.68, uDarkTheme);
     }
 
-    // 5. Underside reflection from brass cove
     if (vNormalLocal.y < -0.3) {
       color += uGlowColor * uWarmLight * mix(0.35, 0.65, uDarkTheme);
     }
@@ -386,6 +392,10 @@ interface SculptureMeshesProps {
   warmLightOn: boolean;
   sanctuaryDark: boolean;
   isMobile: boolean;
+  cameraPreset: CameraPresetId;
+  engravedText: string;
+  showHotspots: boolean;
+  onSelectCameraPreset?: (preset: CameraPresetId) => void;
 }
 
 const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
@@ -394,6 +404,10 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   warmLightOn,
   sanctuaryDark,
   isMobile,
+  cameraPreset,
+  engravedText,
+  showHotspots,
+  onSelectCameraPreset,
 }) => {
   const { gl, scene, camera, invalidate } = useThree();
   const madreGltf = useGLTF(MADRE_MODEL_URL, DRACO_URL);
@@ -402,7 +416,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   const groupRef = useRef<THREE.Group>(null);
 
   const currentReveal = useRef(0.95);
-  const currentWarm = useRef(warmLightOn ? 1.0 : 0.12);
+  const currentWarm = useRef(warmLightOn ? 1.0 : 0.0);
   const currentDark = useRef(sanctuaryDark ? 1.0 : 0.0);
   const currentRotY = useRef(0.06);
   const targetPreset = FINISH_PRESETS[finishId];
@@ -445,7 +459,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
         uSkinColor: { value: new THREE.Color('#F5D5BC') },
         uSssColor: { value: new THREE.Color('#F2954E') },
         uDeepShadowColor: { value: new THREE.Color('#C49574') },
-        uWarmLight: { value: 1.0 },
+        uWarmLight: { value: warmLightOn ? 1.0 : 0.0 },
       },
       depthWrite: true,
       depthTest: true,
@@ -473,7 +487,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
         uRimColor: { value: new THREE.Color(FINISH_PRESETS.porcelain_silk.lightRim) },
         uWombGlowColor: { value: new THREE.Color(FINISH_PRESETS.porcelain_silk.wombGlowColor) },
         uReveal: { value: 0.95 },
-        uWarmLight: { value: 1.0 },
+        uWarmLight: { value: warmLightOn ? 1.0 : 0.0 },
         uWombCenterAlpha: { value: FINISH_PRESETS.porcelain_silk.wombCenterAlpha },
       },
       transparent: true,
@@ -493,8 +507,8 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
         uStoneMid: { value: new THREE.Color('#DFD3C2') },
         uStonePore: { value: new THREE.Color('#9C8A74') },
         uGlowColor: { value: new THREE.Color('#FFA84C') },
-        uWarmLight: { value: 1.0 },
-        uDarkTheme: { value: 0.0 },
+        uWarmLight: { value: warmLightOn ? 1.0 : 0.0 },
+        uDarkTheme: { value: sanctuaryDark ? 1.0 : 0.0 },
       },
     });
   }, []);
@@ -504,9 +518,17 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
       vertexShader: BRASS_PLINTH_VERTEX_SHADER,
       fragmentShader: BRASS_PLINTH_FRAGMENT_SHADER,
       uniforms: {
-        uWarmLight: { value: 1.0 },
-        uDarkTheme: { value: 0.0 },
+        uWarmLight: { value: warmLightOn ? 1.0 : 0.0 },
+        uDarkTheme: { value: sanctuaryDark ? 1.0 : 0.0 },
       },
+    });
+  }, []);
+
+  const brassPlaqueMaterial = useMemo(() => {
+    return new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#C9A46B'),
+      metalness: 0.72,
+      roughness: 0.3,
     });
   }, []);
 
@@ -515,8 +537,8 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
       vertexShader: FLOOR_GLOW_VERTEX_SHADER,
       fragmentShader: FLOOR_GLOW_FRAGMENT_SHADER,
       uniforms: {
-        uWarmLight: { value: 1.0 },
-        uDarkTheme: { value: 0.0 },
+        uWarmLight: { value: warmLightOn ? 1.0 : 0.0 },
+        uDarkTheme: { value: sanctuaryDark ? 1.0 : 0.0 },
       },
       transparent: true,
       depthWrite: false,
@@ -527,7 +549,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
     return new THREE.MeshBasicMaterial({
       color: new THREE.Color('#FFB866'),
       transparent: true,
-      opacity: 0.55,
+      opacity: warmLightOn ? 0.55 : 0.0,
       depthWrite: false,
     });
   }, []);
@@ -575,16 +597,22 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
 
   useEffect(() => {
     invalidate();
-  }, [finishId, warmLightOn, sanctuaryDark, invalidate]);
+  }, [finishId, warmLightOn, sanctuaryDark, cameraPreset, engravedText, invalidate]);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
     const speed = dt * 6.5;
 
     const p = progressRef.current;
-    const targetReveal = 0.35 + Math.min(1, p * 1.35) * 0.65;
-    const targetRotY = THREE.MathUtils.lerp(-0.42, 0.38, p);
-    const targetWarm = warmLightOn ? 1.0 : 0.08;
+    const targetReveal =
+      cameraPreset === 'womb' ? 1.0 : 0.45 + Math.min(1, p * 1.25) * 0.55;
+    const targetRotY =
+      cameraPreset === 'plaque'
+        ? 0.0
+        : cameraPreset === 'womb'
+          ? 0.08
+          : THREE.MathUtils.lerp(-0.42, 0.38, p);
+    const targetWarm = warmLightOn ? 1.0 : 0.0;
     const targetDark = sanctuaryDark ? 1.0 : 0.0;
 
     currentReveal.current = THREE.MathUtils.lerp(currentReveal.current, targetReveal, speed);
@@ -623,7 +651,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
     floorGlowMaterial.uniforms.uWarmLight.value = currentWarm.current;
     floorGlowMaterial.uniforms.uDarkTheme.value = currentDark.current;
 
-    topApertureMaterial.opacity = THREE.MathUtils.lerp(0.1, 0.55, currentWarm.current);
+    topApertureMaterial.opacity = THREE.MathUtils.lerp(0.0, 0.55, currentWarm.current);
 
     const revealDiff = Math.abs(targetReveal - currentReveal.current);
     const rotDiff = Math.abs(targetRotY - currentRotY.current);
@@ -646,6 +674,8 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
 
   const slabSmoothness = isMobile ? 2 : 4;
   const ringSegments = isMobile ? 40 : 64;
+  const displayEngraving = engravedText.trim() || 'EMILIANO · SEMANA 28';
+  const showEngravingBadge = engravedText.trim().length > 0 || cameraPreset === 'plaque';
 
   return (
     <group ref={groupRef} position={[0, -0.62, 0]} scale={0.80} rotation={[0, 0.06, 0]}>
@@ -656,6 +686,33 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
       <primitive object={madreDepthScene} position={[0, 0, 0]} scale={1} />
       <primitive object={madreFrontScene} position={[0, 0, 0]} scale={1} />
 
+      {/* Interactive 3D Hotspots in Full View */}
+      {showHotspots && cameraPreset === 'full' && onSelectCameraPreset && (
+        <>
+          <Html position={[0.24, 0.49, 0.34]} center zIndexRange={[12, 0]}>
+            <button
+              type="button"
+              onClick={() => onSelectCameraPreset('womb')}
+              className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#D4B07B] hotspot-pulse" />
+              <span>Ver bebé en el vientre</span>
+            </button>
+          </Html>
+
+          <Html position={[-0.36, -0.01, 0.68]} center zIndexRange={[12, 0]}>
+            <button
+              type="button"
+              onClick={() => onSelectCameraPreset('plaque')}
+              className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105"
+            >
+              <span className="text-[#D4B07B]">✦</span>
+              <span>Placa grabada</span>
+            </button>
+          </Html>
+        </>
+      )}
+
       <group position={[0, 0, 0.01]}>
         <RoundedBox
           args={[1.34, 0.132, 1.34]}
@@ -664,6 +721,30 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
           position={[0, -0.066, 0]}
           material={travertineMaterial}
         />
+
+        {/* Beveled Front Brushed Brass Plaque */}
+        <RoundedBox
+          args={[0.56, 0.048, 0.014]}
+          radius={0.002}
+          smoothness={2}
+          position={[0, -0.066, 0.672]}
+          material={brassPlaqueMaterial}
+        />
+
+        {/* Crisp Live Engraving Label anchored onto front brass plaque */}
+        {showEngravingBadge && (
+          <Html
+            position={[0, -0.066, 0.684]}
+            center
+            zIndexRange={[15, 0]}
+          >
+            <div className="pointer-events-none select-none px-3 py-0.5 bg-gradient-to-b from-[#E5C996] via-[#C8A164] to-[#A67D42] border border-[#F5DFB6]/70 shadow-sm whitespace-nowrap">
+              <span className="font-serif italic text-[11px] sm:text-xs tracking-[0.14em] text-[#231C14] font-medium block">
+                {displayEngraving}
+              </span>
+            </div>
+          </Html>
+        )}
 
         <mesh position={[0, 0.001, -0.01]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.29, 0.38, ringSegments]} />
@@ -687,6 +768,84 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   );
 };
 
+interface CameraRigProps {
+  cameraPreset: CameraPresetId;
+  cameraMoveNonce: number;
+  isMobile: boolean;
+  onUserOrbitStart?: () => void;
+}
+
+const CameraRig: React.FC<CameraRigProps> = ({
+  cameraPreset,
+  cameraMoveNonce,
+  isMobile,
+  onUserOrbitStart,
+}) => {
+  const controlsRef = useRef<OrbitControlsImpl>(null);
+  const { camera, invalidate } = useThree();
+  const isAnimatingRef = useRef(false);
+  const initializedRef = useRef(false);
+  const desiredPosRef = useRef(new THREE.Vector3(...CAMERA_PRESETS.full.pos));
+  const desiredTargetRef = useRef(new THREE.Vector3(...CAMERA_PRESETS.full.target));
+
+  useEffect(() => {
+    if (!initializedRef.current && controlsRef.current) {
+      controlsRef.current.target.set(...CAMERA_PRESETS.full.target);
+      controlsRef.current.update();
+      initializedRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    const cfg = CAMERA_PRESETS[cameraPreset];
+    desiredPosRef.current.set(...cfg.pos);
+    desiredTargetRef.current.set(...cfg.target);
+    if (cameraMoveNonce > 0) {
+      isAnimatingRef.current = true;
+      invalidate();
+    }
+  }, [cameraPreset, cameraMoveNonce, invalidate]);
+
+  useFrame((_, delta) => {
+    if (!isAnimatingRef.current || !controlsRef.current) return;
+
+    const alpha = Math.min(1, delta * 4.5);
+    camera.position.lerp(desiredPosRef.current, alpha);
+    controlsRef.current.target.lerp(desiredTargetRef.current, alpha);
+    controlsRef.current.update();
+
+    const posDist = camera.position.distanceTo(desiredPosRef.current);
+    const tgtDist = controlsRef.current.target.distanceTo(desiredTargetRef.current);
+
+    if (posDist < 0.006 && tgtDist < 0.006) {
+      camera.position.copy(desiredPosRef.current);
+      controlsRef.current.target.copy(desiredTargetRef.current);
+      controlsRef.current.update();
+      isAnimatingRef.current = false;
+    } else {
+      invalidate();
+    }
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      makeDefault
+      enablePan={false}
+      enableZoom={false}
+      enableDamping={true}
+      dampingFactor={isMobile ? 0.08 : 0.045}
+      rotateSpeed={isMobile ? 0.85 : 0.75}
+      minPolarAngle={Math.PI / 4.2}
+      maxPolarAngle={Math.PI / 1.85}
+      onStart={() => {
+        isAnimatingRef.current = false;
+        onUserOrbitStart?.();
+      }}
+    />
+  );
+};
+
 const LoaderOverlay: React.FC = () => (
   <Html center>
     <div className="px-5 py-2.5 bg-[#FAF7F2]/95 border border-[#E5DEC9] text-center shadow-sm whitespace-nowrap rounded-full">
@@ -700,17 +859,31 @@ const LoaderOverlay: React.FC = () => (
 export interface SculptureStage3DProps {
   progressRef: React.MutableRefObject<number>;
   finishId: ResinFinishId;
+  warmLightOn: boolean;
   sanctuaryDark: boolean;
   invalidateRef: React.MutableRefObject<(() => void) | null>;
   isMobile: boolean;
+  cameraPreset: CameraPresetId;
+  cameraMoveNonce: number;
+  engravedText: string;
+  showHotspots: boolean;
+  onSelectCameraPreset?: (preset: CameraPresetId) => void;
+  onUserOrbitStart?: () => void;
 }
 
 const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
   progressRef,
   finishId,
+  warmLightOn,
   sanctuaryDark,
   invalidateRef,
   isMobile,
+  cameraPreset,
+  cameraMoveNonce,
+  engravedText,
+  showHotspots,
+  onSelectCameraPreset,
+  onUserOrbitStart,
 }) => {
   return (
     <Canvas
@@ -737,22 +910,21 @@ const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
         <SculptureMeshes
           progressRef={progressRef}
           finishId={finishId}
-          warmLightOn={true}
+          warmLightOn={warmLightOn}
           sanctuaryDark={sanctuaryDark}
           isMobile={isMobile}
+          cameraPreset={cameraPreset}
+          engravedText={engravedText}
+          showHotspots={showHotspots}
+          onSelectCameraPreset={onSelectCameraPreset}
         />
       </Suspense>
 
-      <OrbitControls
-        makeDefault
-        enablePan={false}
-        enableZoom={false}
-        enableDamping={true}
-        dampingFactor={isMobile ? 0.08 : 0.045}
-        rotateSpeed={isMobile ? 0.85 : 0.75}
-        minPolarAngle={Math.PI / 4.2}
-        maxPolarAngle={Math.PI / 1.85}
-        target={[0, -0.02, 0]}
+      <CameraRig
+        cameraPreset={cameraPreset}
+        cameraMoveNonce={cameraMoveNonce}
+        isMobile={isMobile}
+        onUserOrbitStart={onUserOrbitStart}
       />
     </Canvas>
   );

@@ -14,6 +14,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: var(--bg-ivory);
     color: var(--text-espresso);
@@ -23,6 +27,9 @@
 
   h1, h2, h3, h4, .font-serif {
     font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  h1, h2, h3, h4 {
     color: var(--text-espresso);
   }
 }
@@ -52,6 +59,29 @@ dialog::backdrop {
   letter-spacing: 0.22em;
   color: #755936;
   font-weight: 500;
+}
+
+/* Subtle luxury sheen / pulse utilities */
+@keyframes pulse-warm-dot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 176, 123, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(212, 176, 123, 0);
+  }
+}
+
+.hotspot-pulse {
+  animation: pulse-warm-dot 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .hotspot-pulse {
+    animation: none;
+  }
 }
 
 /* Subtle warm scrollbar */

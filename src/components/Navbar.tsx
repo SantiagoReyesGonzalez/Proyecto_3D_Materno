@@ -17,11 +17,11 @@ export const Navbar: React.FC = () => {
 
         {/* Center: Clean Editorial Links */}
         <nav className="hidden lg:flex items-center gap-10 text-[11px] uppercase tracking-[0.22em] text-[#6E665E]">
-          <a href="#el-atelier" className="hover:text-[#2C2825] transition-colors whitespace-nowrap">
-            El Atelier
-          </a>
           <a href="#visor-3d" className="hover:text-[#2C2825] transition-colors whitespace-nowrap">
             Estudio 3D
+          </a>
+          <a href="#el-atelier" className="hover:text-[#2C2825] transition-colors whitespace-nowrap">
+            El Atelier
           </a>
           <a href="#catalogo-tiers" className="hover:text-[#2C2825] transition-colors whitespace-nowrap">
             Colección
