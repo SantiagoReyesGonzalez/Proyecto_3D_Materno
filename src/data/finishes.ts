@@ -5,11 +5,11 @@ export interface FinishPreset {
   hint: string;
   swatchGradient: string;
   swatchBorder: string;
-  // Day Atelier palette (luminous, creamy, zero dark/black tones)
+  // Day Atelier palette (luminous, creamy alabaster tones)
   lightShell: string;
   lightDeep: string;
   lightRim: string;
-  // Evening Sanctuary palette (warm bronze-champagne, never pitch black)
+  // Evening Sanctuary palette (warm translucent backlit crystal-alabaster, never dull/grey)
   darkShell: string;
   darkDeep: string;
   darkRim: string;
@@ -26,11 +26,11 @@ export const FINISH_PRESETS: Record<ResinFinishId, FinishPreset> = {
     lightShell: '#FBF8F3',
     lightDeep: '#E2D6C5',
     lightRim: '#FFFFFF',
-    darkShell: '#C8B8A4',
-    darkDeep: '#6E5D4D',
-    darkRim: '#FFF6E8',
-    wombGlowColor: '#FFB35C',
-    wombCenterAlpha: 0.07,
+    darkShell: '#F0E4D4',
+    darkDeep: '#5C4433',
+    darkRim: '#FFF8EC',
+    wombGlowColor: '#FFB861',
+    wombCenterAlpha: 0.06,
   },
   champagne_quartz: {
     id: 'champagne_quartz',
@@ -40,10 +40,10 @@ export const FINISH_PRESETS: Record<ResinFinishId, FinishPreset> = {
     lightShell: '#F6EFE4',
     lightDeep: '#D6C4AC',
     lightRim: '#FFFDF9',
-    darkShell: '#BCA68E',
-    darkDeep: '#5E4E3E',
-    darkRim: '#FFF0D8',
-    wombGlowColor: '#FFA647',
+    darkShell: '#EAD6BC',
+    darkDeep: '#563D2B',
+    darkRim: '#FFF3DF',
+    wombGlowColor: '#FFA845',
     wombCenterAlpha: 0.05,
   },
   honey_amber: {
@@ -54,10 +54,10 @@ export const FINISH_PRESETS: Record<ResinFinishId, FinishPreset> = {
     lightShell: '#F4E8D6',
     lightDeep: '#CBB396',
     lightRim: '#FFF9EE',
-    darkShell: '#B09474',
-    darkDeep: '#524132',
+    darkShell: '#E2C399',
+    darkDeep: '#4F3522',
     darkRim: '#FFECC8',
-    wombGlowColor: '#FF9A36',
+    wombGlowColor: '#FF982E',
     wombCenterAlpha: 0.04,
   },
 };

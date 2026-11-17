@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import { useProductStore } from '../store/useProductStore';
 import { FINISH_PRESETS, ResinFinishId } from '../data/finishes';
 import { PRODUCT_TIERS, formatCOP } from '../data/products';
@@ -7,22 +8,22 @@ import type { CameraPresetId } from './SculptureStage3D';
 const SculptureStage3D = lazy(() => import('./SculptureStage3D'));
 
 const EDITION_TABS: { id: 1 | 2 | 3; shortLabel: string; priceTag: string }[] = [
-  { id: 1, shortLabel: 'I. Esencia', priceTag: '$249k · Sin luz' },
-  { id: 2, shortLabel: 'II. Luz de Vida', priceTag: '$369k · LED 2700K' },
-  { id: 3, shortLabel: 'III. Total', priceTag: '$690k · A medida' },
+  { id: 1, shortLabel: 'I. Esencia', priceTag: '$249k' },
+  { id: 2, shortLabel: 'II. Luz de Vida', priceTag: '$369k' },
+  { id: 3, shortLabel: 'III. Total', priceTag: '$690k' },
 ];
 
 const CAMERA_VIEWS: { id: CameraPresetId; label: string }[] = [
-  { id: 'full', label: '01 · Vista Completa' },
-  { id: 'womb', label: '02 · Zoom al Bebé' },
-  { id: 'plaque', label: '03 · Placa Grabada' },
+  { id: 'full', label: '01 · Completa' },
+  { id: 'womb', label: '02 · Zoom Bebé' },
+  { id: 'plaque', label: '03 · Placa' },
 ];
 
 const StagePlaceholder: React.FC<{ dark: boolean }> = ({ dark }) => (
   <div className="w-full h-full flex items-center justify-center">
     <div
       className={`px-5 py-2.5 border text-center shadow-sm whitespace-nowrap rounded-full ${
-        dark ? 'bg-[#26211D]/90 border-[#3D352E]' : 'bg-[#FAF7F2]/95 border-[#E5DEC9]'
+        dark ? 'glass-dock-dark' : 'bg-[#FAF7F2]/95 border-[#E5DEC9]'
       }`}
     >
       <p
@@ -51,6 +52,7 @@ export const SculptureViewer3D: React.FC = () => {
   const [sanctuaryDark, setSanctuaryDark] = useState(true);
   const [cameraPreset, setCameraPreset] = useState<CameraPresetId>('full');
   const [cameraMoveNonce, setCameraMoveNonce] = useState(0);
+  const [ultrasoundMode, setUltrasoundMode] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [shouldMount3D, setShouldMount3D] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -67,6 +69,14 @@ export const SculptureViewer3D: React.FC = () => {
   const selectCameraPreset = (preset: CameraPresetId) => {
     setCameraPreset(preset);
     setCameraMoveNonce((n) => n + 1);
+  };
+
+  const handleToggleUltrasoundMode = () => {
+    setUltrasoundMode((prev) => {
+      const next = !prev;
+      selectCameraPreset(next ? 'womb' : 'full');
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -101,9 +111,9 @@ export const SculptureViewer3D: React.FC = () => {
     let timerId: number | undefined;
 
     if (idleWin.requestIdleCallback) {
-      idleId = idleWin.requestIdleCallback(() => setShouldMount3D(true), { timeout: 2000 });
+      idleId = idleWin.requestIdleCallback(() => setShouldMount3D(true), { timeout: 1800 });
     } else {
-      timerId = window.setTimeout(() => setShouldMount3D(true), 1600);
+      timerId = window.setTimeout(() => setShouldMount3D(true), 1400);
     }
 
     return () => {
@@ -154,50 +164,69 @@ export const SculptureViewer3D: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const bgColor = sanctuaryDark ? '#181411' : '#FAF7F2';
+  const renderCameraToolbar = () => (
+    <div className="flex flex-col items-center gap-1.5 w-full max-w-md mx-auto">
+      <div
+        role="group"
+        aria-label="Ángulos de cámara del estudio 3D"
+        className={`inline-flex flex-wrap justify-center items-center gap-1 p-1 shadow-md ${
+          sanctuaryDark
+            ? 'glass-dock-dark'
+            : 'bg-[#FAF7F2]/92 border border-[#E5DEC9] backdrop-blur-md'
+        }`}
+      >
+        {CAMERA_VIEWS.map((view) => {
+          const active = cameraPreset === view.id;
+          return (
+            <button
+              key={view.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => selectCameraPreset(view.id)}
+              className={`px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
+                active
+                  ? sanctuaryDark
+                    ? 'bg-[#D4B07B] text-[#120E0C] font-medium'
+                    : 'bg-[#2C2825] text-[#FAF7F2] font-medium'
+                  : sanctuaryDark
+                    ? 'text-[#EAE2D6] hover:text-[#FAF7F2]'
+                    : 'text-[#6E665E] hover:text-[#2C2825]'
+              }`}
+            >
+              {view.label}
+            </button>
+          );
+        })}
+      </div>
 
-  const renderCameraButtons = (compact = false) => (
-    <div
-      role="group"
-      aria-label="Ángulos de cámara del estudio 3D"
-      className={`inline-flex flex-wrap justify-center items-center gap-1.5 p-1 border backdrop-blur-md shadow-sm ${
-        sanctuaryDark
-          ? 'bg-[#221D19]/92 border-[#3D352E]'
-          : 'bg-[#FAF7F2]/92 border-[#E5DEC9]'
-      }`}
-    >
-      {CAMERA_VIEWS.map((view) => {
-        const active = cameraPreset === view.id;
-        return (
-          <button
-            key={view.id}
-            type="button"
-            aria-pressed={active}
-            onClick={() => selectCameraPreset(view.id)}
-            className={`${
-              compact ? 'px-2.5 py-1.5 text-[9px]' : 'px-3 py-1.5 text-[10px]'
-            } uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-              active
-                ? sanctuaryDark
-                  ? 'bg-[#D4B07B] text-[#181411] font-medium'
-                  : 'bg-[#2C2825] text-[#FAF7F2] font-medium'
-                : sanctuaryDark
-                  ? 'text-[#D6CEC4] hover:text-[#FAF7F2]'
-                  : 'text-[#6E665E] hover:text-[#2C2825]'
-            }`}
-          >
-            {view.label}
-          </button>
-        );
-      })}
+      {/* Star Toggle: 3D Ultrasound Scan <-> Carved Sculpture */}
+      <button
+        type="button"
+        aria-pressed={ultrasoundMode}
+        onClick={handleToggleUltrasoundMode}
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.14em] transition-all shadow-md whitespace-nowrap border ${
+          ultrasoundMode
+            ? 'bg-[#D4B07B] text-[#120E0C] border-[#F5E6CE] font-semibold'
+            : sanctuaryDark
+              ? 'glass-dock-dark text-[#F5E6CE] hover:border-[#D4B07B]'
+              : 'bg-[#FAF7F2]/95 border-[#8C6D46] text-[#2C2825] hover:bg-[#F2ECE1]'
+        }`}
+      >
+        <Sparkles className="w-3 h-3 shrink-0" aria-hidden="true" />
+        <span>
+          {ultrasoundMode
+            ? '✓ Viendo Ecografía 3D · Volver a Escultura'
+            : 'Ver transformación: Ecografía 3D ↔ Escultura'}
+        </span>
+      </button>
     </div>
   );
 
-  const renderControlsDock = () => (
+  const renderSwatchesRow = (compact = false) => (
     <div
-      className={`inline-flex items-center gap-3 px-4 py-2.5 rounded-full border md:backdrop-blur-md transition-colors duration-300 shadow-sm ${
+      className={`inline-flex items-center ${compact ? 'gap-2 px-3 py-1.5' : 'gap-3 px-4 py-2.5'} rounded-full border transition-colors duration-300 shadow-sm ${
         sanctuaryDark
-          ? 'bg-[#221D19]/95 border-[#3D352E]'
+          ? 'bg-[#1D1814]/95 border-[#D4B07B]/28'
           : 'bg-[#FAF7F2]/95 border-[#E5DEC9]'
       }`}
     >
@@ -211,12 +240,12 @@ export const SculptureViewer3D: React.FC = () => {
             aria-label={preset.hint}
             title={preset.hint}
             onClick={() => setFinishId(key)}
-            className={`relative w-6 h-6 rounded-full transition-transform duration-300 flex items-center justify-center ${
+            className={`relative ${compact ? 'w-5 h-5' : 'w-6 h-6'} rounded-full transition-transform duration-300 flex items-center justify-center ${
               active ? 'scale-110' : 'opacity-75 hover:opacity-100 hover:scale-105'
             }`}
           >
             <span
-              className="w-5 h-5 rounded-full block shadow-inner"
+              className={`${compact ? 'w-4 h-4' : 'w-5 h-5'} rounded-full block shadow-inner`}
               style={{
                 background: preset.swatchGradient,
                 border: `1px solid ${preset.swatchBorder}`,
@@ -234,7 +263,7 @@ export const SculptureViewer3D: React.FC = () => {
       })}
 
       <span
-        className={`h-4 w-[1px] mx-0.5 ${
+        className={`h-3.5 w-[1px] mx-0.5 ${
           sanctuaryDark ? 'bg-[#3D352E]' : 'bg-[#E5DEC9]'
         }`}
       />
@@ -244,30 +273,80 @@ export const SculptureViewer3D: React.FC = () => {
         onClick={() => setSanctuaryDark((v) => !v)}
         title={sanctuaryDark ? 'Cambiar a luz de día' : 'Ver en Santuario Nocturno 2700K'}
         aria-label={sanctuaryDark ? 'Cambiar a luz de día' : 'Ver en Santuario Nocturno 2700K'}
-        className={`inline-flex items-center gap-2 pl-1 pr-2 py-0.5 rounded-full text-[11px] font-serif italic transition-colors whitespace-nowrap ${
+        className={`inline-flex items-center gap-1.5 pr-1 py-0.5 rounded-full text-[11px] font-serif italic transition-colors whitespace-nowrap ${
           sanctuaryDark
             ? 'text-[#FFB866]'
             : 'text-[#6E665E] hover:text-[#2C2825]'
         }`}
       >
         <span
-          className={`w-3.5 h-3.5 rounded-full transition-all flex items-center justify-center ${
+          className={`w-3 h-3 rounded-full transition-all flex items-center justify-center ${
             sanctuaryDark
               ? 'bg-[#FFB866] shadow-[0_0_10px_#FFA84C]'
               : 'bg-[#2C2825]'
           }`}
         />
-        <span>{sanctuaryDark ? 'Noche 2700K' : 'Luz Día'}</span>
+        <span>{sanctuaryDark ? 'Noche' : 'Día'}</span>
       </button>
     </div>
   );
 
-  const renderConfiguratorPanel = (variant: 'desktop' | 'mobile') => {
-    const plaqueInputId = `studio-plaque-input-${variant}`;
+  const renderEditionSelector = (compact = false) => (
+    <div className={`grid grid-cols-3 ${compact ? 'gap-1.5' : 'gap-2'}`}>
+      {EDITION_TABS.map((tab) => {
+        const active = selectedTier === tab.id;
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => setTier(tab.id)}
+            className={`${compact ? 'p-2' : 'p-2.5 sm:p-3'} text-left border transition-colors ${
+              active
+                ? sanctuaryDark
+                  ? 'bg-[#2B241E] border-[#D4B07B] text-[#FAF7F2]'
+                  : 'bg-[#F2ECE1] border-[#8C6D46] text-[#2C2825]'
+                : sanctuaryDark
+                  ? 'bg-[#1D1814]/80 border-[#352E28] text-[#EAE2D6] hover:border-[#8C6D46]'
+                  : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#2C2825] hover:border-[#8C6D46]'
+            }`}
+          >
+            <span
+              className={`font-serif ${compact ? 'text-xs' : 'text-sm sm:text-base'} block leading-tight truncate ${
+                active
+                  ? sanctuaryDark
+                    ? 'text-[#FAF7F2]'
+                    : 'text-[#2C2825]'
+                  : sanctuaryDark
+                    ? 'text-[#EAE2D6]'
+                    : 'text-[#6E665E]'
+              }`}
+            >
+              {tab.shortLabel}
+            </span>
+            <span
+              className={`text-[10px] block mt-0.5 ${
+                active
+                  ? sanctuaryDark
+                    ? 'text-[#D4B07B]'
+                    : 'text-[#755936]'
+                  : sanctuaryDark
+                    ? 'text-[#B5AAA0]'
+                    : 'text-[#6E665E]'
+              }`}
+            >
+              {tab.priceTag}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
 
+  const renderDesktopConfigurator = () => {
+    const plaqueInputId = 'studio-plaque-input-desktop';
     return (
       <div className="w-full space-y-5">
-        {/* 1. Live 3-Edition Selector */}
         <div className="space-y-2 text-left">
           <span
             className={`block text-[10px] uppercase tracking-[0.2em] font-medium ${
@@ -276,58 +355,9 @@ export const SculptureViewer3D: React.FC = () => {
           >
             01 · Elige tu edición en el estudio 3D
           </span>
-          <div className="grid grid-cols-3 gap-2">
-            {EDITION_TABS.map((tab) => {
-              const active = selectedTier === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setTier(tab.id)}
-                  className={`p-2.5 sm:p-3 text-left border transition-colors ${
-                    active
-                      ? sanctuaryDark
-                        ? 'bg-[#2B241E] border-[#D4B07B] text-[#FAF7F2]'
-                        : 'bg-[#F2ECE1] border-[#8C6D46] text-[#2C2825]'
-                      : sanctuaryDark
-                        ? 'bg-[#211C18]/70 border-[#352E28] text-[#EAE2D6] hover:border-[#8C6D46]'
-                        : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#2C2825] hover:border-[#8C6D46]'
-                  }`}
-                >
-                  <span
-                    className={`font-serif text-sm sm:text-base block leading-tight ${
-                      active
-                        ? sanctuaryDark
-                          ? 'text-[#FAF7F2]'
-                          : 'text-[#2C2825]'
-                        : sanctuaryDark
-                          ? 'text-[#EAE2D6]'
-                          : 'text-[#6E665E]'
-                    }`}
-                  >
-                    {tab.shortLabel}
-                  </span>
-                  <span
-                    className={`text-[10px] block mt-0.5 ${
-                      active
-                        ? sanctuaryDark
-                          ? 'text-[#D4B07B]'
-                          : 'text-[#755936]'
-                        : sanctuaryDark
-                          ? 'text-[#B5AAA0]'
-                          : 'text-[#6E665E]'
-                    }`}
-                  >
-                    {tab.priceTag}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {renderEditionSelector(false)}
         </div>
 
-        {/* 2. Emotional Live Plaque Input */}
         <div className="space-y-1.5 text-left">
           <div className="flex items-baseline justify-between gap-2">
             <label
@@ -366,7 +396,7 @@ export const SculptureViewer3D: React.FC = () => {
             }}
             className={`w-full px-3.5 py-2.5 text-sm border focus:outline-none transition-colors ${
               sanctuaryDark
-                ? 'bg-[#221D19] border-[#3D352E] text-[#FAF7F2] placeholder:text-[#8E8377] focus:border-[#D4B07B]'
+                ? 'bg-[#1D1814] border-[#3D352E] text-[#FAF7F2] placeholder:text-[#8E8377] focus:border-[#D4B07B]'
                 : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#2C2825] placeholder:text-[#8E8377] focus:border-[#8C6D46]'
             }`}
           />
@@ -379,11 +409,10 @@ export const SculptureViewer3D: React.FC = () => {
           </p>
         </div>
 
-        {/* 3. Swatches + Atmosphere + Direct 50% Reservation CTA */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          {renderControlsDock()}
+          {renderSwatchesRow(false)}
 
-          <div className="text-left sm:text-right">
+          <div className="text-right">
             <span
               className={`text-[10px] uppercase tracking-[0.16em] block ${
                 sanctuaryDark ? 'text-[#B5AAA0]' : 'text-[#6E665E]'
@@ -392,7 +421,7 @@ export const SculptureViewer3D: React.FC = () => {
               {activeTierObj.name}
             </span>
             <span
-              className={`font-serif text-xl sm:text-2xl ${
+              className={`font-serif text-2xl ${
                 sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
               }`}
             >
@@ -406,7 +435,64 @@ export const SculptureViewer3D: React.FC = () => {
           onClick={() => openOrderModal()}
           className={`w-full py-4 px-6 text-[11px] uppercase tracking-[0.22em] transition-colors flex items-center justify-center gap-3 font-medium ${
             sanctuaryDark
-              ? 'bg-[#D4B07B] text-[#181411] hover:bg-[#E2C290]'
+              ? 'bg-[#D4B07B] text-[#120E0C] hover:bg-[#E5C694]'
+              : 'bg-[#2C2825] text-[#FAF7F2] hover:bg-[#8C6D46]'
+          }`}
+        >
+          <span>Reservar con 50% ({formatCOP(halfBookingPrice)} COP)</span>
+          <span>→</span>
+        </button>
+      </div>
+    );
+  };
+
+  const renderMobileGlassDock = () => {
+    const plaqueInputId = 'studio-plaque-input-mobile';
+    return (
+      <div
+        className={`w-full p-3.5 space-y-2.5 transition-colors ${
+          sanctuaryDark
+            ? 'glass-dock-dark'
+            : 'bg-[#FAF7F2]/95 border border-[#E5DEC9] shadow-sm'
+        }`}
+      >
+        {renderEditionSelector(true)}
+
+        <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <label htmlFor={plaqueInputId} className="sr-only">
+              Personaliza la placa con el nombre de tu bebé
+            </label>
+            <input
+              id={plaqueInputId}
+              type="text"
+              maxLength={34}
+              placeholder="Grabar nombre en placa..."
+              value={customerData.plaqueText}
+              onFocus={() => selectCameraPreset('plaque')}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!customerData.plaqueText && val) {
+                  selectCameraPreset('plaque');
+                }
+                updateCustomerData({ plaqueText: val });
+              }}
+              className={`w-full px-3 py-2 text-xs border focus:outline-none transition-colors ${
+                sanctuaryDark
+                  ? 'bg-[#1D1814] border-[#3D352E] text-[#FAF7F2] placeholder:text-[#8E8377] focus:border-[#D4B07B]'
+                  : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#2C2825] placeholder:text-[#8E8377] focus:border-[#8C6D46]'
+              }`}
+            />
+          </div>
+          {renderSwatchesRow(true)}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => openOrderModal()}
+          className={`w-full py-3 px-4 text-[10px] uppercase tracking-[0.18em] transition-colors flex items-center justify-center gap-2 font-medium whitespace-nowrap ${
+            sanctuaryDark
+              ? 'bg-[#D4B07B] text-[#120E0C] hover:bg-[#E5C694]'
               : 'bg-[#2C2825] text-[#FAF7F2] hover:bg-[#8C6D46]'
           }`}
         >
@@ -421,61 +507,63 @@ export const SculptureViewer3D: React.FC = () => {
     <section
       ref={sectionRef}
       id="visor-3d"
-      style={{ backgroundColor: bgColor }}
-      className="scroll-mt-20 relative w-full border-t border-[#E5DEC9]/25 overflow-hidden transition-colors duration-300"
+      className={`scroll-mt-20 relative w-full border-t overflow-hidden transition-colors duration-300 ${
+        sanctuaryDark
+          ? 'bg-sanctuary-radial border-[#D4B07B]/20'
+          : 'bg-[#FAF7F2] border-[#E5DEC9]'
+      }`}
     >
-      <div className="max-w-7xl mx-auto px-5 sm:px-10 lg:px-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-14">
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-10 items-center">
-          {/* Left Editorial & Interactive Studio Column */}
-          <div className="lg:col-span-5 pt-12 pb-4 lg:py-16 space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-            <div className="space-y-3 max-w-md">
+          {/* Left Editorial & Desktop Studio Console */}
+          <div className="lg:col-span-5 pt-9 pb-1 lg:py-16 space-y-3 sm:space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
+            <div className="space-y-2 sm:space-y-3 max-w-md">
               <span
                 className={`eyebrow block transition-colors duration-300 ${
                   sanctuaryDark ? '!text-[#D4B07B]' : ''
                 }`}
               >
-                {sanctuaryDark ? 'Estudio 3D · Santuario Nocturno 2700K' : 'Estudio 3D · Luz de Galería'} —{' '}
+                {sanctuaryDark ? 'Estudio 3D · Santuario 2700K' : 'Estudio 3D · Galería'} —{' '}
                 {FINISH_PRESETS[finishId].hint}
               </span>
               <h2
-                className={`font-serif text-3xl sm:text-5xl font-light leading-[1.12] transition-colors duration-300 ${
+                className={`font-serif text-2xl sm:text-5xl font-light leading-[1.12] transition-colors duration-300 ${
                   sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
                 }`}
               >
                 El misterio de la vida,{' '}
                 <em
-                  className={`italic font-normal transition-colors duration-300 ${
-                    sanctuaryDark ? 'text-[#DFB882]' : 'text-[#8C6D46]'
+                  className={`italic font-normal ${
+                    sanctuaryDark ? 'text-gold-shimmer' : 'text-[#8C6D46]'
                   }`}
                 >
                   revelado en luz.
                 </em>
               </h2>
               <p
-                className={`text-sm sm:text-[15px] font-light leading-relaxed transition-colors duration-300 ${
+                className={`hidden sm:block text-sm sm:text-[15px] font-light leading-relaxed transition-colors duration-300 ${
                   sanctuaryDark ? 'text-[#D6CEC4]' : 'text-[#6E665E]'
                 }`}
               >
-                Explora cada detalle en 360°, acerca la cámara al bebé o personaliza el grabado de su
-                nombre sobre el travertino con luz cálida de 2700K.
+                Gira 360°, alterna entre tu ecografía 3D y la escultura final, o personaliza el
+                grabado de su nombre sobre el travertino.
               </p>
             </div>
 
-            {/* Desktop Full Configurator */}
-            <div className="hidden lg:block w-full pt-1">{renderConfiguratorPanel('desktop')}</div>
+            <div className="hidden lg:block w-full pt-1">{renderDesktopConfigurator()}</div>
           </div>
 
-          {/* Right / Center Dedicated 3D Stage */}
+          {/* Right / Center Interactive 3D Viewport */}
           <div
-            className="lg:col-span-7 relative h-[430px] sm:h-[540px] lg:h-[680px] w-full"
+            className="lg:col-span-7 relative h-[380px] sm:h-[500px] lg:h-[680px] w-full"
             style={{ touchAction: 'pan-y' }}
             onPointerDown={() => {
               if (!hasInteracted) setHasInteracted(true);
             }}
           >
-            {/* Camera Angle Selector Bar overlaid cleanly at top */}
-            <div className="absolute top-3 sm:top-5 inset-x-0 z-10 flex justify-center px-2 pointer-events-none">
-              <div className="pointer-events-auto">{renderCameraButtons(true)}</div>
+            {/* Floating Camera Angles + Ultrasound Transformation Controls */}
+            <div className="absolute top-2.5 sm:top-5 inset-x-0 z-10 flex justify-center px-2 pointer-events-none">
+              <div className="pointer-events-auto">{renderCameraToolbar()}</div>
             </div>
 
             {shouldMount3D ? (
@@ -489,6 +577,7 @@ export const SculptureViewer3D: React.FC = () => {
                   isMobile={isMobile}
                   cameraPreset={cameraPreset}
                   cameraMoveNonce={cameraMoveNonce}
+                  ultrasoundMode={ultrasoundMode}
                   engravedText={customerData.plaqueText}
                   showHotspots={true}
                   onSelectCameraPreset={selectCameraPreset}
@@ -527,22 +616,9 @@ export const SculptureViewer3D: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile & Tablet Configurator cleanly below the 3D Stage */}
-        <div className="lg:hidden pb-12 pt-2 flex flex-col items-center gap-4">
-          <div
-            className={`pointer-events-none flex items-center gap-2 transition-opacity duration-700 ${
-              hasInteracted ? 'opacity-0 h-0 overflow-hidden' : 'opacity-80'
-            }`}
-          >
-            <span
-              className={`font-serif italic text-xs ${
-                sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#8C6D46]'
-              }`}
-            >
-              Desliza la escultura para girar · 360°
-            </span>
-          </div>
-          <div className="w-full max-w-lg">{renderConfiguratorPanel('mobile')}</div>
+        {/* Mobile Native App Dark Glass Dock directly beneath the 380px viewport */}
+        <div className="lg:hidden pb-8 pt-1 flex flex-col items-center gap-2.5">
+          {renderMobileGlassDock()}
         </div>
       </div>
     </section>

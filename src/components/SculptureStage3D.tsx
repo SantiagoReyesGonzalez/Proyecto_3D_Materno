@@ -45,6 +45,7 @@ const BABY_FRAGMENT_SHADER = /* glsl */ `
   uniform vec3 uSssColor;
   uniform vec3 uDeepShadowColor;
   uniform float uWarmLight;
+  uniform float uUltrasoundMode;
 
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
@@ -82,12 +83,23 @@ const BABY_FRAGMENT_SHADER = /* glsl */ `
     float spec = pow(max(dot(N, H), 0.0), 24.0) * 0.14;
     color += vec3(1.0, 0.97, 0.92) * spec;
 
+    // Volumetric 3D Prenatal Ultrasound Holographic Overlay
+    float scanLines = 0.76 + 0.24 * sin(vWorldPos.y * 190.0);
+    float echoRim = pow(1.0 - ndotv, 1.75);
+    float echoRelief = clamp(diffKey * 0.8 + wombWrap * 0.25, 0.0, 1.0);
+    vec3 usDeep = vec3(0.30, 0.19, 0.09);
+    vec3 usBright = vec3(0.96, 0.77, 0.46);
+    vec3 ultrasoundColor = mix(usDeep, usBright, smoothstep(0.18, 0.92, echoRelief)) * scanLines;
+    ultrasoundColor += vec3(1.0, 0.88, 0.62) * echoRim * 0.92;
+
+    color = mix(color, ultrasoundColor, clamp(uUltrasoundMode, 0.0, 1.0));
+
     gl_FragColor = vec4(color, 1.0);
   }
 `;
 
 // ============================================================================
-// 2. MOTHER DEPTH PRE-PASS & SUBTLE FROSTED RESIN SHADER
+// 2. MOTHER DEPTH PRE-PASS & SUBTLE FROSTED CRYSTAL-ALABASTER RESIN SHADER
 // ============================================================================
 const MOTHER_VERTEX_SHADER = /* glsl */ `
   varying vec3 vNormalWorld;
@@ -148,8 +160,8 @@ const MOTHER_FRAGMENT_SHADER = /* glsl */ `
     vec3 V = normalize(vViewDir);
 
     float ndotv = clamp(dot(N, V), 0.0, 1.0);
-    float fresnel = pow(1.0 - ndotv, 2.15);
-    float rimFine = pow(1.0 - ndotv, 3.4);
+    float fresnel = pow(1.0 - ndotv, 2.05);
+    float rimFine = pow(1.0 - ndotv, 3.2);
 
     vec3 keyDir = normalize(vec3(0.48, 0.76, 0.68));
     vec3 fillDir = normalize(vec3(-0.65, 0.42, 0.52));
@@ -160,7 +172,7 @@ const MOTHER_FRAGMENT_SHADER = /* glsl */ `
 
     float lightMix = clamp(diffKey * 0.72 + diffFill * 0.28, 0.0, 1.0);
     vec3 bodyTone = mix(uDeepColor, uShellColor, lightMix);
-    bodyTone = mix(bodyTone, uShellColor, hemi * 0.25);
+    bodyTone = mix(bodyTone, uShellColor, hemi * 0.28);
 
     vec3 wombCenter = vec3(-0.01, 0.51, 0.33);
     vec3 dWomb = (vSculptPos - wombCenter) / vec3(0.28, 0.31, 0.26);
@@ -172,22 +184,23 @@ const MOTHER_FRAGMENT_SHADER = /* glsl */ `
 
     float bellyBoundsMask = aboveLegsMask * belowUpperHandMask * forwardBellyMask;
     float wombWindow = (1.0 - smoothstep(0.58, 1.06, distToWomb)) * bellyBoundsMask;
-    float wombGlowField = exp(-distToWomb * 1.65) * bellyBoundsMask;
+    float wombGlowField = exp(-distToWomb * 1.45) * bellyBoundsMask;
+    float torsoSubsurface = exp(-length(vSculptPos - vec3(0.0, 0.68, 0.16)) * 1.8) * 0.45 * uWarmLight;
 
-    float baseContactRim = exp(-vSculptPos.y * 30.0) * 0.25 * uWarmLight;
+    float baseContactRim = exp(-vSculptPos.y * 28.0) * 0.28 * uWarmLight;
 
-    float internalScatter = wombGlowField * (0.48 + 0.52 * fresnel) * uWarmLight * uReveal;
-    vec3 color = mix(bodyTone, bodyTone + uWombGlowColor * 0.52, internalScatter);
+    float internalScatter = (wombGlowField * (0.52 + 0.48 * fresnel) + torsoSubsurface * fresnel) * uWarmLight * uReveal;
+    vec3 color = mix(bodyTone, bodyTone + uWombGlowColor * 0.64, clamp(internalScatter, 0.0, 0.92));
     color += uWombGlowColor * baseContactRim;
 
     vec3 H = normalize(keyDir + V);
     float specAtten = (1.0 - wombWindow * 0.65) * (1.0 - breastMask * 0.88);
-    float spec = pow(max(dot(N, H), 0.0), 34.0) * 0.20 * specAtten;
-    color = mix(color, uRimColor, rimFine * 0.40 * (1.0 - wombWindow * 0.45) * (1.0 - breastMask * 0.55));
+    float spec = pow(max(dot(N, H), 0.0), 34.0) * 0.22 * specAtten;
+    color = mix(color, uRimColor, rimFine * 0.46 * (1.0 - wombWindow * 0.45) * (1.0 - breastMask * 0.55));
     color += uRimColor * spec;
 
     float bellyEdgeFresnel = pow(1.0 - ndotv, 3.2);
-    float windowAlpha = mix(uWombCenterAlpha, 0.58, bellyEdgeFresnel * 0.55);
+    float windowAlpha = mix(uWombCenterAlpha, 0.56, bellyEdgeFresnel * 0.55);
     float targetAlpha = mix(1.0, windowAlpha, wombWindow * uReveal);
 
     gl_FragColor = vec4(color, targetAlpha);
@@ -386,6 +399,58 @@ const FLOOR_GLOW_FRAGMENT_SHADER = /* glsl */ `
   }
 `;
 
+// ============================================================================
+// 6. VOLUMETRIC 2700K BACKLIGHT HALO & 36 FLOATING GOLD DUST PARTICLES
+// ============================================================================
+const BACKLIGHT_VERTEX_SHADER = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const BACKLIGHT_FRAGMENT_SHADER = /* glsl */ `
+  varying vec2 vUv;
+  uniform float uStrength;
+
+  void main() {
+    vec2 centered = vUv * 2.0 - 1.0;
+    float d = length(centered * vec2(1.0, 0.85));
+    float halo = exp(-d * 2.55) * (1.0 - smoothstep(0.62, 1.0, d));
+    gl_FragColor = vec4(1.0, 0.72, 0.34, halo * uStrength);
+  }
+`;
+
+const GOLD_PARTICLES_VERTEX_SHADER = /* glsl */ `
+  attribute float aScale;
+  attribute float aPhase;
+  uniform float uPhaseShift;
+  uniform float uPixelRatio;
+  varying float vTwinkle;
+
+  void main() {
+    vec3 p = position;
+    p.y += sin(aPhase + uPhaseShift * 4.5) * 0.05;
+    p.x += cos(aPhase * 1.3 + uPhaseShift * 3.2) * 0.03;
+    vec4 mvPos = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mvPos;
+    gl_PointSize = aScale * uPixelRatio * (22.0 / max(1.0, -mvPos.z));
+    vTwinkle = 0.55 + 0.45 * sin(aPhase + uPhaseShift * 6.0);
+  }
+`;
+
+const GOLD_PARTICLES_FRAGMENT_SHADER = /* glsl */ `
+  uniform float uAlpha;
+  varying float vTwinkle;
+
+  void main() {
+    float d = length(gl_PointCoord - vec2(0.5));
+    float soft = pow(max(0.0, 1.0 - d * 2.0), 2.2);
+    gl_FragColor = vec4(1.0, 0.84, 0.54, soft * uAlpha * vTwinkle);
+  }
+`;
+
 interface SculptureMeshesProps {
   progressRef: React.MutableRefObject<number>;
   finishId: ResinFinishId;
@@ -393,6 +458,7 @@ interface SculptureMeshesProps {
   sanctuaryDark: boolean;
   isMobile: boolean;
   cameraPreset: CameraPresetId;
+  ultrasoundMode: boolean;
   engravedText: string;
   showHotspots: boolean;
   onSelectCameraPreset?: (preset: CameraPresetId) => void;
@@ -405,6 +471,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   sanctuaryDark,
   isMobile,
   cameraPreset,
+  ultrasoundMode,
   engravedText,
   showHotspots,
   onSelectCameraPreset,
@@ -418,6 +485,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   const currentReveal = useRef(0.95);
   const currentWarm = useRef(warmLightOn ? 1.0 : 0.0);
   const currentDark = useRef(sanctuaryDark ? 1.0 : 0.0);
+  const currentUltrasound = useRef(ultrasoundMode ? 1.0 : 0.0);
   const currentRotY = useRef(0.06);
   const targetPreset = FINISH_PRESETS[finishId];
 
@@ -460,6 +528,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
         uSssColor: { value: new THREE.Color('#F2954E') },
         uDeepShadowColor: { value: new THREE.Color('#C49574') },
         uWarmLight: { value: warmLightOn ? 1.0 : 0.0 },
+        uUltrasoundMode: { value: ultrasoundMode ? 1.0 : 0.0 },
       },
       depthWrite: true,
       depthTest: true,
@@ -554,6 +623,58 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
     });
   }, []);
 
+  const backlightMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: BACKLIGHT_VERTEX_SHADER,
+      fragmentShader: BACKLIGHT_FRAGMENT_SHADER,
+      uniforms: {
+        uStrength: { value: warmLightOn && sanctuaryDark ? 0.48 : 0.12 },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+  }, []);
+
+  const particlesData = useMemo(() => {
+    const count = 36;
+    const positions = new Float32Array(count * 3);
+    const scales = new Float32Array(count);
+    const phases = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      // Deterministic golden-ratio spiral distribution around sculpture aura
+      const angle = i * 2.39996;
+      const radius = 0.52 + ((i * 37) % 100) / 100 * 0.85;
+      const y = -0.68 + ((i * 53) % 100) / 100 * 1.55;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = Math.sin(angle) * radius * 0.72;
+      scales[i] = 0.75 + ((i * 19) % 100) / 100 * 1.35;
+      phases[i] = i * 0.42;
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
+    geometry.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader: GOLD_PARTICLES_VERTEX_SHADER,
+      fragmentShader: GOLD_PARTICLES_FRAGMENT_SHADER,
+      uniforms: {
+        uPhaseShift: { value: 0.5 },
+        uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.5) },
+        uAlpha: { value: sanctuaryDark ? 0.75 : 0.25 },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    return { geometry, material };
+  }, [isMobile]);
+
   const bebeScene = useMemo(() => {
     const cloned = bebeGltf.scene.clone(true);
     cloned.traverse((child) => {
@@ -597,7 +718,15 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
 
   useEffect(() => {
     invalidate();
-  }, [finishId, warmLightOn, sanctuaryDark, cameraPreset, engravedText, invalidate]);
+  }, [
+    finishId,
+    warmLightOn,
+    sanctuaryDark,
+    cameraPreset,
+    ultrasoundMode,
+    engravedText,
+    invalidate,
+  ]);
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, 0.05);
@@ -605,7 +734,9 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
 
     const p = progressRef.current;
     const targetReveal =
-      cameraPreset === 'womb' ? 1.0 : 0.45 + Math.min(1, p * 1.25) * 0.55;
+      cameraPreset === 'womb' || ultrasoundMode
+        ? 1.0
+        : 0.45 + Math.min(1, p * 1.25) * 0.55;
     const targetRotY =
       cameraPreset === 'plaque'
         ? 0.0
@@ -614,11 +745,17 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
           : THREE.MathUtils.lerp(-0.42, 0.38, p);
     const targetWarm = warmLightOn ? 1.0 : 0.0;
     const targetDark = sanctuaryDark ? 1.0 : 0.0;
+    const targetUltrasound = ultrasoundMode ? 1.0 : 0.0;
 
     currentReveal.current = THREE.MathUtils.lerp(currentReveal.current, targetReveal, speed);
     currentRotY.current = THREE.MathUtils.lerp(currentRotY.current, targetRotY, speed);
     currentWarm.current = THREE.MathUtils.lerp(currentWarm.current, targetWarm, speed);
     currentDark.current = THREE.MathUtils.lerp(currentDark.current, targetDark, speed);
+    currentUltrasound.current = THREE.MathUtils.lerp(
+      currentUltrasound.current,
+      targetUltrasound,
+      speed
+    );
 
     if (groupRef.current) {
       groupRef.current.rotation.y = currentRotY.current;
@@ -637,6 +774,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
     );
 
     bebeMaterial.uniforms.uWarmLight.value = currentWarm.current;
+    bebeMaterial.uniforms.uUltrasoundMode.value = currentUltrasound.current;
 
     travertineMaterial.uniforms.uStoneLight.value.lerp(targetStoneLight, speed);
     travertineMaterial.uniforms.uStoneMid.value.lerp(targetStoneMid, speed);
@@ -652,11 +790,19 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
     floorGlowMaterial.uniforms.uDarkTheme.value = currentDark.current;
 
     topApertureMaterial.opacity = THREE.MathUtils.lerp(0.0, 0.55, currentWarm.current);
+    backlightMaterial.uniforms.uStrength.value =
+      THREE.MathUtils.lerp(0.08, 0.52, currentDark.current) *
+      THREE.MathUtils.lerp(0.2, 1.0, currentWarm.current);
+    particlesData.material.uniforms.uPhaseShift.value = p;
+    particlesData.material.uniforms.uAlpha.value =
+      THREE.MathUtils.lerp(0.18, 0.85, currentDark.current) *
+      THREE.MathUtils.lerp(0.35, 1.0, currentWarm.current);
 
     const revealDiff = Math.abs(targetReveal - currentReveal.current);
     const rotDiff = Math.abs(targetRotY - currentRotY.current);
     const warmDiff = Math.abs(targetWarm - currentWarm.current);
     const darkDiff = Math.abs(targetDark - currentDark.current);
+    const ultrasoundDiff = Math.abs(targetUltrasound - currentUltrasound.current);
     const colorDiff =
       Math.abs(madreFrontMaterial.uniforms.uShellColor.value.r - targetShellColor.r) +
       Math.abs(madreFrontMaterial.uniforms.uShellColor.value.g - targetShellColor.g);
@@ -666,6 +812,7 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
       rotDiff > 0.002 ||
       warmDiff > 0.002 ||
       darkDiff > 0.002 ||
+      ultrasoundDiff > 0.002 ||
       colorDiff > 0.003
     ) {
       invalidate();
@@ -678,7 +825,21 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   const showEngravingBadge = engravedText.trim().length > 0 || cameraPreset === 'plaque';
 
   return (
-    <group ref={groupRef} position={[0, -0.62, 0]} scale={0.80} rotation={[0, 0.06, 0]}>
+    <>
+      {/* Volumetric 2700K Backlight Halo behind sculpture */}
+      <mesh position={[0, -0.02, -0.72]} renderOrder={0}>
+        <planeGeometry args={[2.8, 3.2]} />
+        <primitive object={backlightMaterial} attach="material" />
+      </mesh>
+
+      {/* 36 Floating Golden Dust Motes in Sanctuary Aura */}
+      <points
+        geometry={particlesData.geometry}
+        material={particlesData.material}
+        renderOrder={4}
+      />
+
+      <group ref={groupRef} position={[0, -0.62, 0]} scale={0.80} rotation={[0, 0.06, 0]}>
       <group position={[-0.01, 0.21, 0.095]} scale={0.275}>
         <primitive object={bebeScene} />
       </group>
@@ -764,7 +925,8 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
           <primitive object={floorGlowMaterial} attach="material" />
         </mesh>
       </group>
-    </group>
+      </group>
+    </>
   );
 };
 
@@ -865,6 +1027,7 @@ export interface SculptureStage3DProps {
   isMobile: boolean;
   cameraPreset: CameraPresetId;
   cameraMoveNonce: number;
+  ultrasoundMode: boolean;
   engravedText: string;
   showHotspots: boolean;
   onSelectCameraPreset?: (preset: CameraPresetId) => void;
@@ -880,6 +1043,7 @@ const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
   isMobile,
   cameraPreset,
   cameraMoveNonce,
+  ultrasoundMode,
   engravedText,
   showHotspots,
   onSelectCameraPreset,
@@ -914,6 +1078,7 @@ const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
           sanctuaryDark={sanctuaryDark}
           isMobile={isMobile}
           cameraPreset={cameraPreset}
+          ultrasoundMode={ultrasoundMode}
           engravedText={engravedText}
           showHotspots={showHotspots}
           onSelectCameraPreset={onSelectCameraPreset}

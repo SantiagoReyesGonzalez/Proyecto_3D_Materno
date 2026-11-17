@@ -61,7 +61,62 @@ dialog::backdrop {
   font-weight: 500;
 }
 
-/* Subtle luxury sheen / pulse utilities */
+/* Luxury Atmosphere, Metallic Shimmer & Sanctuary Glass Utilities */
+.bg-sanctuary-radial {
+  background-color: #120E0C;
+  background-image: radial-gradient(
+    circle at 50% 42%,
+    rgba(212, 163, 99, 0.22) 0%,
+    rgba(140, 109, 70, 0.08) 42%,
+    rgba(18, 14, 12, 0.98) 78%
+  );
+}
+
+.text-gold-shimmer {
+  background: linear-gradient(135deg, #F5E6CE 0%, #D4B07B 50%, #9E7A47 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-dock-dark {
+  background: rgba(28, 23, 19, 0.86);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 176, 123, 0.28);
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes aura-breathe {
+  0%, 100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 5.5s ease-in-out infinite;
+}
+
+.animate-aura-breathe {
+  animation: aura-breathe 4.8s ease-in-out infinite;
+}
+
+/* Subtle warm sheen / pulse utilities */
 @keyframes pulse-warm-dot {
   0%, 100% {
     box-shadow: 0 0 0 0 rgba(212, 176, 123, 0.55);
@@ -79,7 +134,9 @@ dialog::backdrop {
   html {
     scroll-behavior: auto;
   }
-  .hotspot-pulse {
+  .hotspot-pulse,
+  .animate-float-slow,
+  .animate-aura-breathe {
     animation: none;
   }
 }
