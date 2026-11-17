@@ -14,9 +14,9 @@ const EDITION_TABS: { id: 1 | 2 | 3; shortLabel: string; priceTag: string }[] = 
 ];
 
 const CAMERA_VIEWS: { id: CameraPresetId; label: string }[] = [
-  { id: 'full', label: '01 · Completa' },
-  { id: 'womb', label: '02 · Zoom Bebé' },
-  { id: 'plaque', label: '03 · Placa' },
+  { id: 'full', label: 'Completa' },
+  { id: 'womb', label: 'Bebé' },
+  { id: 'plaque', label: 'Placa' },
 ];
 
 const StagePlaceholder: React.FC<{ dark: boolean }> = ({ dark }) => (
@@ -53,7 +53,6 @@ export const SculptureViewer3D: React.FC = () => {
   const [cameraPreset, setCameraPreset] = useState<CameraPresetId>('full');
   const [cameraMoveNonce, setCameraMoveNonce] = useState(0);
   const [ultrasoundMode, setUltrasoundMode] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [shouldMount3D, setShouldMount3D] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -165,66 +164,66 @@ export const SculptureViewer3D: React.FC = () => {
   }, []);
 
   const renderCameraToolbar = () => (
-    <div className="flex flex-col items-center gap-1.5 w-full max-w-md mx-auto">
-      <div
-        role="group"
-        aria-label="Ángulos de cámara del estudio 3D"
-        className={`inline-flex flex-wrap justify-center items-center gap-1 p-1 shadow-md ${
-          sanctuaryDark
-            ? 'glass-dock-dark'
-            : 'bg-[#FAF7F2]/92 border border-[#E5DEC9] backdrop-blur-md'
-        }`}
-      >
-        {CAMERA_VIEWS.map((view) => {
-          const active = cameraPreset === view.id;
-          return (
-            <button
-              key={view.id}
-              type="button"
-              aria-pressed={active}
-              onClick={() => selectCameraPreset(view.id)}
-              className={`px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
-                active
-                  ? sanctuaryDark
-                    ? 'bg-[#D4B07B] text-[#120E0C] font-medium'
-                    : 'bg-[#2C2825] text-[#FAF7F2] font-medium'
-                  : sanctuaryDark
-                    ? 'text-[#EAE2D6] hover:text-[#FAF7F2]'
-                    : 'text-[#6E665E] hover:text-[#2C2825]'
-              }`}
-            >
-              {view.label}
-            </button>
-          );
-        })}
-      </div>
+    <div
+      role="group"
+      aria-label="Controles del estudio 3D"
+      className={`inline-flex flex-wrap justify-center items-center gap-1 p-1 shadow-md ${
+        sanctuaryDark
+          ? 'glass-dock-dark'
+          : 'bg-[#FAF7F2]/92 border border-[#E5DEC9] backdrop-blur-md'
+      }`}
+    >
+      {CAMERA_VIEWS.map((view) => {
+        const active = cameraPreset === view.id;
+        return (
+          <button
+            key={view.id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => selectCameraPreset(view.id)}
+            className={`px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
+              active
+                ? sanctuaryDark
+                  ? 'bg-[#D4B07B] text-[#120E0C] font-medium'
+                  : 'bg-[#2C2825] text-[#FAF7F2] font-medium'
+                : sanctuaryDark
+                  ? 'text-[#EAE2D6] hover:text-[#FAF7F2]'
+                  : 'text-[#6E665E] hover:text-[#2C2825]'
+            }`}
+          >
+            {view.label}
+          </button>
+        );
+      })}
 
-      {/* Star Toggle: 3D Ultrasound Scan <-> Carved Sculpture */}
+      <span
+        className={`h-3.5 w-[1px] mx-0.5 ${
+          sanctuaryDark ? 'bg-[#D4B07B]/25' : 'bg-[#E5DEC9]'
+        }`}
+        aria-hidden="true"
+      />
+
       <button
         type="button"
         aria-pressed={ultrasoundMode}
         onClick={handleToggleUltrasoundMode}
-        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.14em] transition-all shadow-md whitespace-nowrap border ${
+        className={`inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.14em] transition-colors whitespace-nowrap ${
           ultrasoundMode
-            ? 'bg-[#D4B07B] text-[#120E0C] border-[#F5E6CE] font-semibold'
+            ? 'bg-[#D4B07B] text-[#120E0C] font-medium'
             : sanctuaryDark
-              ? 'glass-dock-dark text-[#F5E6CE] hover:border-[#D4B07B]'
-              : 'bg-[#FAF7F2]/95 border-[#8C6D46] text-[#2C2825] hover:bg-[#F2ECE1]'
+              ? 'text-[#F5E6CE] hover:text-[#D4B07B]'
+              : 'text-[#755936] hover:text-[#2C2825]'
         }`}
       >
         <Sparkles className="w-3 h-3 shrink-0" aria-hidden="true" />
-        <span>
-          {ultrasoundMode
-            ? '✓ Viendo Ecografía 3D · Volver a Escultura'
-            : 'Ver transformación: Ecografía 3D ↔ Escultura'}
-        </span>
+        <span>Modo Ecografía</span>
       </button>
     </div>
   );
 
   const renderSwatchesRow = (compact = false) => (
     <div
-      className={`inline-flex items-center ${compact ? 'gap-2 px-3 py-1.5' : 'gap-3 px-4 py-2.5'} rounded-full border transition-colors duration-300 shadow-sm ${
+      className={`inline-flex items-center ${compact ? 'gap-2 px-3 py-1.5' : 'gap-3 px-4 py-2'} rounded-full border transition-colors duration-300 shadow-sm ${
         sanctuaryDark
           ? 'bg-[#1D1814]/95 border-[#D4B07B]/28'
           : 'bg-[#FAF7F2]/95 border-[#E5DEC9]'
@@ -346,45 +345,18 @@ export const SculptureViewer3D: React.FC = () => {
   const renderDesktopConfigurator = () => {
     const plaqueInputId = 'studio-plaque-input-desktop';
     return (
-      <div className="w-full space-y-5">
-        <div className="space-y-2 text-left">
-          <span
-            className={`block text-[10px] uppercase tracking-[0.2em] font-medium ${
-              sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#755936]'
-            }`}
-          >
-            01 · Elige tu edición en el estudio 3D
-          </span>
-          {renderEditionSelector(false)}
-        </div>
+      <div className="w-full space-y-4">
+        {renderEditionSelector(false)}
 
-        <div className="space-y-1.5 text-left">
-          <div className="flex items-baseline justify-between gap-2">
-            <label
-              htmlFor={plaqueInputId}
-              className={`block text-[10px] uppercase tracking-[0.2em] font-medium ${
-                sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#755936]'
-              }`}
-            >
-              02 · Personaliza la placa con el nombre de tu bebé
-            </label>
-            {cameraPreset !== 'plaque' && (
-              <button
-                type="button"
-                onClick={() => selectCameraPreset('plaque')}
-                className={`text-[10px] underline underline-offset-2 shrink-0 ${
-                  sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#755936]'
-                }`}
-              >
-                Enfocar placa
-              </button>
-            )}
-          </div>
+        <div>
+          <label htmlFor={plaqueInputId} className="sr-only">
+            Grabar nombre en la placa
+          </label>
           <input
             id={plaqueInputId}
             type="text"
             maxLength={34}
-            placeholder="Ej. Emiliano · Semana 28"
+            placeholder="Grabar nombre en la placa (ej. Emiliano)"
             value={customerData.plaqueText}
             onFocus={() => selectCameraPreset('plaque')}
             onChange={(e) => {
@@ -400,26 +372,12 @@ export const SculptureViewer3D: React.FC = () => {
                 : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#2C2825] placeholder:text-[#8E8377] focus:border-[#8C6D46]'
             }`}
           />
-          <p
-            className={`text-[11px] font-light ${
-              sanctuaryDark ? 'text-[#B5AAA0]' : 'text-[#6E665E]'
-            }`}
-          >
-            Grabado incluido en III. Maternidad Total · Vista previa en tiempo real sobre travertino.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           {renderSwatchesRow(false)}
 
           <div className="text-right">
-            <span
-              className={`text-[10px] uppercase tracking-[0.16em] block ${
-                sanctuaryDark ? 'text-[#B5AAA0]' : 'text-[#6E665E]'
-              }`}
-            >
-              {activeTierObj.name}
-            </span>
             <span
               className={`font-serif text-2xl ${
                 sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
@@ -439,7 +397,7 @@ export const SculptureViewer3D: React.FC = () => {
               : 'bg-[#2C2825] text-[#FAF7F2] hover:bg-[#8C6D46]'
           }`}
         >
-          <span>Reservar con 50% ({formatCOP(halfBookingPrice)} COP)</span>
+          <span>Reservar con 50% ({formatCOP(halfBookingPrice)})</span>
           <span>→</span>
         </button>
       </div>
@@ -461,13 +419,13 @@ export const SculptureViewer3D: React.FC = () => {
         <div className="flex items-center gap-2">
           <div className="flex-1 min-w-0">
             <label htmlFor={plaqueInputId} className="sr-only">
-              Personaliza la placa con el nombre de tu bebé
+              Grabar nombre en la placa
             </label>
             <input
               id={plaqueInputId}
               type="text"
               maxLength={34}
-              placeholder="Grabar nombre en placa..."
+              placeholder="Grabar nombre en la placa (ej. Emiliano)"
               value={customerData.plaqueText}
               onFocus={() => selectCameraPreset('plaque')}
               onChange={(e) => {
@@ -496,7 +454,9 @@ export const SculptureViewer3D: React.FC = () => {
               : 'bg-[#2C2825] text-[#FAF7F2] hover:bg-[#8C6D46]'
           }`}
         >
-          <span>Reservar con 50% ({formatCOP(halfBookingPrice)} COP)</span>
+          <span>
+            {activeTierObj.name} · 50%: {formatCOP(halfBookingPrice)}
+          </span>
           <span>→</span>
         </button>
       </div>
@@ -515,53 +475,41 @@ export const SculptureViewer3D: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-14">
         <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-10 items-center">
-          {/* Left Editorial & Desktop Studio Console */}
+          {/* Left Editorial & Minimal Studio Console */}
           <div className="lg:col-span-5 pt-9 pb-1 lg:py-16 space-y-3 sm:space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-            <div className="space-y-2 sm:space-y-3 max-w-md">
+            <div className="space-y-2 max-w-md">
               <span
                 className={`eyebrow block transition-colors duration-300 ${
                   sanctuaryDark ? '!text-[#D4B07B]' : ''
                 }`}
               >
-                {sanctuaryDark ? 'Estudio 3D · Santuario 2700K' : 'Estudio 3D · Galería'} —{' '}
-                {FINISH_PRESETS[finishId].hint}
+                Estudio 3D · 2700K
               </span>
               <h2
                 className={`font-serif text-2xl sm:text-5xl font-light leading-[1.12] transition-colors duration-300 ${
                   sanctuaryDark ? 'text-[#FAF7F2]' : 'text-[#2C2825]'
                 }`}
               >
-                El misterio de la vida,{' '}
+                Explora tu{' '}
                 <em
                   className={`italic font-normal ${
                     sanctuaryDark ? 'text-gold-shimmer' : 'text-[#8C6D46]'
                   }`}
                 >
-                  revelado en luz.
+                  escultura.
                 </em>
               </h2>
-              <p
-                className={`hidden sm:block text-sm sm:text-[15px] font-light leading-relaxed transition-colors duration-300 ${
-                  sanctuaryDark ? 'text-[#D6CEC4]' : 'text-[#6E665E]'
-                }`}
-              >
-                Gira 360°, alterna entre tu ecografía 3D y la escultura final, o personaliza el
-                grabado de su nombre sobre el travertino.
-              </p>
             </div>
 
-            <div className="hidden lg:block w-full pt-1">{renderDesktopConfigurator()}</div>
+            <div className="hidden lg:block w-full pt-2">{renderDesktopConfigurator()}</div>
           </div>
 
           {/* Right / Center Interactive 3D Viewport */}
           <div
-            className="lg:col-span-7 relative h-[380px] sm:h-[500px] lg:h-[680px] w-full"
+            className="lg:col-span-7 relative h-[380px] sm:h-[500px] lg:h-[660px] w-full"
             style={{ touchAction: 'pan-y' }}
-            onPointerDown={() => {
-              if (!hasInteracted) setHasInteracted(true);
-            }}
           >
-            {/* Floating Camera Angles + Ultrasound Transformation Controls */}
+            {/* Compact Single-Row Camera + Ultrasound Bar */}
             <div className="absolute top-2.5 sm:top-5 inset-x-0 z-10 flex justify-center px-2 pointer-events-none">
               <div className="pointer-events-auto">{renderCameraToolbar()}</div>
             </div>
@@ -579,45 +527,16 @@ export const SculptureViewer3D: React.FC = () => {
                   cameraMoveNonce={cameraMoveNonce}
                   ultrasoundMode={ultrasoundMode}
                   engravedText={customerData.plaqueText}
-                  showHotspots={true}
-                  onSelectCameraPreset={selectCameraPreset}
-                  onUserOrbitStart={() => {
-                    if (!hasInteracted) setHasInteracted(true);
-                  }}
                 />
               </Suspense>
             ) : (
               <StagePlaceholder dark={sanctuaryDark} />
             )}
-
-            {/* Subtle Disappearing Gesture Hint: Bottom-right on desktop */}
-            <div
-              className={`pointer-events-none absolute bottom-6 right-4 z-10 hidden lg:flex items-center gap-2 transition-opacity duration-700 ${
-                hasInteracted ? 'opacity-0' : 'opacity-80'
-              }`}
-            >
-              <span
-                className={`font-serif italic text-sm ${
-                  sanctuaryDark ? 'text-[#D4B07B]' : 'text-[#8C6D46]'
-                }`}
-              >
-                Arrastra para girar 360°
-              </span>
-              <span
-                className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs ${
-                  sanctuaryDark
-                    ? 'border-[#D4B07B]/40 text-[#D4B07B]'
-                    : 'border-[#8C6D46]/40 text-[#8C6D46]'
-                }`}
-              >
-                ↔
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Mobile Native App Dark Glass Dock directly beneath the 380px viewport */}
-        <div className="lg:hidden pb-8 pt-1 flex flex-col items-center gap-2.5">
+        {/* Mobile Native App Dark Glass Dock */}
+        <div className="lg:hidden pb-8 pt-1 flex flex-col items-center">
           {renderMobileGlassDock()}
         </div>
       </div>

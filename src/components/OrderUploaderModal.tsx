@@ -142,7 +142,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
   };
 
   return (
-    <div className="bg-[#FAF7F2] border border-[#E5DEC9] p-8 sm:p-14 relative">
+    <div className="bg-[#FAF7F2] border border-[#E5DEC9] p-6 sm:p-12 relative">
       {isModal && onClose && (
         <button
           type="button"
@@ -154,23 +154,19 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
         </button>
       )}
 
-      {/* Editorial Heading */}
-      <div className="max-w-xl mx-auto text-center space-y-3 pb-12 border-b border-[#E5DEC9]">
-        <span className="eyebrow block">
-          Reserva de Obra · Atelier Bogotá
-        </span>
+      {/* Minimal Editorial Heading */}
+      <div className="max-w-xl mx-auto text-center space-y-2 pb-9 border-b border-[#E5DEC9]">
         <h3 className="font-serif text-3xl sm:text-5xl font-light text-[#2C2825]">
-          Inicia el esculpido de <em className="italic text-[#8C6D46]">tu bebé.</em>
+          Reserva tu <em className="italic text-[#8C6D46]">obra.</em>
         </h3>
         <p className="text-sm text-[#6E665E] font-light">
-          Abona la mitad al reservar y el saldo restante cuando apruebes la escultura digital.
+          50% hoy · 50% al aprobar tu render 3D.
         </p>
       </div>
 
-      <form onSubmit={handleSubmitOrder} className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left Column: Edition, Ultrasound & Personal Details */}
-        <div className="lg:col-span-7 space-y-8">
-          {/* Edition Selector */}
+      <form onSubmit={handleSubmitOrder} className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Left Column: Edition, Ultrasound & Customer Inputs */}
+        <div className="lg:col-span-7 space-y-7">
           <div>
             <span className="eyebrow block mb-3">01 · Edición</span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -199,12 +195,9 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
             </div>
           </div>
 
-          {/* Tier 3 Modality */}
           {selectedTier === 3 && (
-            <div className="p-5 bg-[#F2ECE1] border border-[#E5DEC9] flex flex-wrap items-center justify-between gap-4">
-              <span className="text-xs text-[#2C2825]">
-                Modalidad para esculpir la silueta materna:
-              </span>
+            <div className="p-4 bg-[#F2ECE1] border border-[#E5DEC9] flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs text-[#2C2825]">Silueta materna:</span>
               <div className="inline-flex border border-[#E5DEC9] bg-[#FAF7F2] text-xs">
                 <button
                   type="button"
@@ -215,7 +208,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                       : 'text-[#6E665E]'
                   }`}
                 >
-                  Guía Fotográfica ($690.000)
+                  Fotos guía ($690.000)
                 </button>
                 <button
                   type="button"
@@ -232,12 +225,12 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
             </div>
           )}
 
-          {/* Drag & Drop Ultrasound */}
+          {/* Drag & Drop Ultrasound (Clean dashed box without footnote) */}
           <div>
             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-              <span className="eyebrow block">02 · Ecografía 3D únicamente</span>
-              <span className="text-[11px] text-[#8C6D46] font-medium">
-                Solo 3D / 4D · No sirven ecografías 2D
+              <span className="eyebrow block">02 · Ecografía 3D</span>
+              <span className="text-[11px] text-[#755936] font-medium">
+                Solo 3D/4D · No 2D
               </span>
             </div>
             <div
@@ -249,7 +242,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                   setUploadedFetusFile(e.dataTransfer.files[0]);
                 }
               }}
-              className="border border-dashed border-[#8C6D46]/60 bg-[#F2ECE1]/50 hover:bg-[#F2ECE1] p-8 text-center cursor-pointer transition-colors"
+              className="border border-dashed border-[#8C6D46]/60 bg-[#F2ECE1]/50 hover:bg-[#F2ECE1] p-7 text-center cursor-pointer transition-colors"
             >
               <input
                 ref={fetusInputRef}
@@ -266,25 +259,15 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                 </p>
               ) : (
                 <p className="font-serif italic text-xl text-[#6E665E]">
-                  Haz clic o arrastra aquí tu ecografía 3D/4D (.jpg, .png, .mp4)
+                  Arrastra o selecciona tu ecografía 3D/4D
                 </p>
               )}
             </div>
-            <p className="mt-2 text-xs text-[#6E665E] font-light">
-              Importante: únicamente modelamos desde ecografías 3D/4D con relieve; las ecografías 2D
-              planas no permiten reconstruir las facciones.
-            </p>
           </div>
 
-          {/* Mother reference photos (only for Tier 3 Maternidad Total with photo guide) */}
           {selectedTier === 3 && tier3Modality === 'photo_guide' && (
             <div>
-              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                <span className="eyebrow block">02B · Fotos de la Mamá (Edición Premium)</span>
-                <span className="text-[11px] text-[#8C6D46]">
-                  Para esculpir su silueta exacta
-                </span>
-              </div>
+              <span className="eyebrow block mb-3">02B · Fotos de la Mamá (Edición III)</span>
               <div
                 onClick={() => motherInputRef.current?.click()}
                 onDragOver={(e) => e.preventDefault()}
@@ -294,7 +277,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                     setUploadedMotherPhotos(Array.from(e.dataTransfer.files));
                   }
                 }}
-                className="border border-dashed border-[#8C6D46]/60 bg-[#F2ECE1]/40 hover:bg-[#F2ECE1] p-6 text-center cursor-pointer transition-colors"
+                className="border border-dashed border-[#8C6D46]/60 bg-[#F2ECE1]/40 hover:bg-[#F2ECE1] p-5 text-center cursor-pointer transition-colors"
               >
                 <input
                   ref={motherInputRef}
@@ -310,19 +293,19 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                 />
                 {uploadedMotherPhotos.length > 0 ? (
                   <p className="font-serif italic text-lg text-[#2C2825]">
-                    ✓ {uploadedMotherPhotos.length} foto(s) de la madre adjunta(s)
+                    ✓ {uploadedMotherPhotos.length} foto(s) adjunta(s)
                   </p>
                 ) : (
                   <p className="font-serif italic text-lg text-[#6E665E]">
-                    Adjunta 2 a 4 fotografías de referencia de la madre (.jpg, .png)
+                    Adjunta 2 a 4 fotos de perfil
                   </p>
                 )}
               </div>
             </div>
           )}
 
-          {/* Customer & Custom Sculpture Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* Customer Details Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="eyebrow block mb-2">Tu Nombre</label>
               <input
@@ -415,9 +398,7 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
 
             {selectedTier === 3 && (
               <div className="sm:col-span-2">
-                <label className="eyebrow block mb-2">
-                  Grabado en Placa de Latón (Opcional)
-                </label>
+                <label className="eyebrow block mb-2">Placa Grabada (Opcional)</label>
                 <input
                   type="text"
                   placeholder="Ej. Emiliano · Dulce espera 2026"
@@ -430,49 +411,37 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
           </div>
         </div>
 
-        {/* Right Column: Payment Options */}
-        <div className="lg:col-span-5 bg-[#F2ECE1] border border-[#E5DEC9] p-8 flex flex-col justify-between space-y-8">
-          <div className="space-y-4">
+        {/* Right Column: Clean One-Line Payment Cards */}
+        <div className="lg:col-span-5 bg-[#F2ECE1] border border-[#E5DEC9] p-6 sm:p-8 flex flex-col justify-between space-y-6">
+          <div className="space-y-3">
             <span className="eyebrow block">03 · Modalidad de Pago</span>
 
             <div
               onClick={() => setPaymentModality('split_50_50')}
-              className={`p-4 border cursor-pointer transition-colors ${
+              className={`p-4 border cursor-pointer transition-colors flex justify-between items-baseline gap-2 ${
                 paymentModality === 'split_50_50'
                   ? 'bg-[#FAF7F2] border-[#8C6D46]'
                   : 'bg-[#FAF7F2]/50 border-[#E5DEC9]'
               }`}
             >
-              <div className="flex justify-between items-baseline">
-                <span className="font-serif text-xl text-[#2C2825]">Reserva 50% / 50%</span>
-                <span className="font-serif italic text-lg text-[#8C6D46]">
-                  {formatCOP(halfPrice)} hoy
-                </span>
-              </div>
-              <p className="text-xs text-[#6E665E] mt-1 font-light">
-                Mitad hoy para modelar y mitad al aprobar el render por WhatsApp.
-              </p>
+              <span className="font-serif text-xl text-[#2C2825]">Reserva 50% / 50%</span>
+              <span className="font-serif italic text-lg text-[#8C6D46] whitespace-nowrap">
+                {formatCOP(halfPrice)} hoy
+              </span>
             </div>
 
             <div
               onClick={() => setPaymentModality('addi_3_cuotas')}
-              className={`p-4 border cursor-pointer transition-colors ${
+              className={`p-4 border cursor-pointer transition-colors flex justify-between items-baseline gap-2 ${
                 paymentModality === 'addi_3_cuotas'
                   ? 'bg-[#FAF7F2] border-[#8C6D46]'
                   : 'bg-[#FAF7F2]/50 border-[#E5DEC9]'
               }`}
             >
-              <div className="flex justify-between items-baseline">
-                <span className="font-serif text-xl text-[#2C2825]">
-                  3 Cuotas sin Interés
-                </span>
-                <span className="font-serif italic text-lg text-[#8C6D46]">
-                  3 × {formatCOP(installment3)}
-                </span>
-              </div>
-              <p className="text-xs text-[#6E665E] mt-1 font-light">
-                Financiación inmediata con Addi o Sistecredito.
-              </p>
+              <span className="font-serif text-xl text-[#2C2825]">3 Cuotas sin Interés</span>
+              <span className="font-serif italic text-lg text-[#8C6D46] whitespace-nowrap">
+                3 × {formatCOP(installment3)}
+              </span>
             </div>
 
             <div
@@ -483,19 +452,14 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                   : 'bg-[#FAF7F2]/50 border-[#E5DEC9]'
               }`}
             >
-              <div className="flex justify-between items-baseline">
-                <span className="font-serif text-xl text-[#2C2825]">
-                  Vaca de Baby Shower
-                </span>
-                <span className="font-serif italic text-lg text-[#8C6D46]">
+              <div className="flex justify-between items-baseline gap-2">
+                <span className="font-serif text-xl text-[#2C2825]">Vaca Baby Shower</span>
+                <span className="font-serif italic text-lg text-[#8C6D46] whitespace-nowrap">
                   {formatCOP(vacaPerPerson)} c/u
                 </span>
               </div>
 
-              <div
-                className="mt-3 flex gap-1.5"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="mt-3 flex gap-1.5" onClick={(e) => e.stopPropagation()}>
                 {[4, 6, 8].map((count) => (
                   <button
                     key={count}
@@ -515,37 +479,31 @@ const OrderFormContent: React.FC<OrderFormContentProps> = ({ isModal, onClose })
                 ))}
               </div>
 
-              <div className="mt-3 flex gap-3" onClick={(e) => e.stopPropagation()}>
+              <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
                   onClick={handleCopyVacaText}
-                  className="text-[11px] uppercase tracking-[0.18em] text-[#8C6D46] underline"
+                  className="text-[11px] uppercase tracking-[0.16em] text-[#755936] underline"
                 >
-                  {copiedVaca ? '✓ Invitación copiada' : 'Copiar invitación WhatsApp →'}
+                  {copiedVaca ? '✓ Copiada' : 'Copiar invitación →'}
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="pt-6 border-t border-[#E5DEC9] space-y-5">
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-baseline">
-                <span className="eyebrow">Valor de la Obra</span>
-                <span className="font-serif text-3xl text-[#2C2825]">
-                  {formatCOP(totalPrice)} COP
-                </span>
-              </div>
-              <div className="flex justify-between items-baseline text-xs text-[#6E665E]">
-                <span>Tiempo estimado de entrega</span>
-                <span className="font-medium text-[#2C2825]">{currentTier.deliveryDays} hábiles</span>
-              </div>
+          <div className="pt-5 border-t border-[#E5DEC9] space-y-4">
+            <div className="flex justify-between items-baseline gap-2">
+              <span className="eyebrow">Total</span>
+              <span className="font-serif text-3xl text-[#2C2825] whitespace-nowrap">
+                {formatCOP(totalPrice)} COP
+              </span>
             </div>
 
             <button
               type="submit"
               className="w-full py-4 px-6 text-[11px] uppercase tracking-[0.22em] text-[#FAF7F2] bg-[#2C2825] hover:bg-[#8C6D46] transition-colors"
             >
-              Confirmar Reserva en el Atelier →
+              Confirmar Reserva →
             </button>
           </div>
         </div>
@@ -616,27 +574,25 @@ export const OrderUploaderModal: React.FC = () => {
     <>
       <section
         id="pedido-directo"
-        className="deferred-section bg-[#FAF7F2] py-28 lg:py-36 border-t border-[#E5DEC9]"
+        className="scroll-mt-20 deferred-section bg-[#FAF7F2] py-20 sm:py-28 border-t border-[#E5DEC9]"
       >
-        <div className="max-w-6xl mx-auto px-6 sm:px-10 lg:px-14">
-          <OrderFormContent isModal={false} />
+        <div className="max-w-5xl mx-auto px-5 sm:px-10">
+          <OrderFormContent />
         </div>
       </section>
 
       <dialog
         ref={dialogRef}
+        closedby="any"
         aria-labelledby={titleId}
-        {...({ closedby: 'any' } as any)}
-        className="w-full max-w-5xl bg-transparent text-[#2C2825] p-0 m-auto open:block"
+        className="w-full max-w-4xl bg-transparent p-0 m-auto backdrop:bg-[#2C2825]/60 open:block"
       >
         <h2 id={titleId} className="sr-only">
           Reserva de Obra Maternidad 3D
         </h2>
-        {isOrderModalOpen && (
-          <div className="p-3 sm:p-6">
-            <OrderFormContent isModal={true} onClose={() => dialogRef.current?.close()} />
-          </div>
-        )}
+        <div className="max-h-[90dvh] overflow-y-auto">
+          <OrderFormContent isModal onClose={closeOrderModal} />
+        </div>
       </dialog>
     </>
   );

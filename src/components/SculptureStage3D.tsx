@@ -460,8 +460,6 @@ interface SculptureMeshesProps {
   cameraPreset: CameraPresetId;
   ultrasoundMode: boolean;
   engravedText: string;
-  showHotspots: boolean;
-  onSelectCameraPreset?: (preset: CameraPresetId) => void;
 }
 
 const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
@@ -473,8 +471,6 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
   cameraPreset,
   ultrasoundMode,
   engravedText,
-  showHotspots,
-  onSelectCameraPreset,
 }) => {
   const { gl, scene, camera, invalidate } = useThree();
   const madreGltf = useGLTF(MADRE_MODEL_URL, DRACO_URL);
@@ -847,33 +843,6 @@ const SculptureMeshes: React.FC<SculptureMeshesProps> = ({
       <primitive object={madreDepthScene} position={[0, 0, 0]} scale={1} />
       <primitive object={madreFrontScene} position={[0, 0, 0]} scale={1} />
 
-      {/* Interactive 3D Hotspots in Full View */}
-      {showHotspots && cameraPreset === 'full' && onSelectCameraPreset && (
-        <>
-          <Html position={[0.24, 0.49, 0.34]} center zIndexRange={[12, 0]}>
-            <button
-              type="button"
-              onClick={() => onSelectCameraPreset('womb')}
-              className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105"
-            >
-              <span className="w-2 h-2 rounded-full bg-[#D4B07B] hotspot-pulse" />
-              <span>Ver bebé en el vientre</span>
-            </button>
-          </Html>
-
-          <Html position={[-0.36, -0.01, 0.68]} center zIndexRange={[12, 0]}>
-            <button
-              type="button"
-              onClick={() => onSelectCameraPreset('plaque')}
-              className="pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105"
-            >
-              <span className="text-[#D4B07B]">✦</span>
-              <span>Placa grabada</span>
-            </button>
-          </Html>
-        </>
-      )}
-
       <group position={[0, 0, 0.01]}>
         <RoundedBox
           args={[1.34, 0.132, 1.34]}
@@ -1029,9 +998,6 @@ export interface SculptureStage3DProps {
   cameraMoveNonce: number;
   ultrasoundMode: boolean;
   engravedText: string;
-  showHotspots: boolean;
-  onSelectCameraPreset?: (preset: CameraPresetId) => void;
-  onUserOrbitStart?: () => void;
 }
 
 const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
@@ -1045,9 +1011,6 @@ const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
   cameraMoveNonce,
   ultrasoundMode,
   engravedText,
-  showHotspots,
-  onSelectCameraPreset,
-  onUserOrbitStart,
 }) => {
   return (
     <Canvas
@@ -1080,8 +1043,6 @@ const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
           cameraPreset={cameraPreset}
           ultrasoundMode={ultrasoundMode}
           engravedText={engravedText}
-          showHotspots={showHotspots}
-          onSelectCameraPreset={onSelectCameraPreset}
         />
       </Suspense>
 
@@ -1089,7 +1050,6 @@ const SculptureStage3D: React.FC<SculptureStage3DProps> = ({
         cameraPreset={cameraPreset}
         cameraMoveNonce={cameraMoveNonce}
         isMobile={isMobile}
-        onUserOrbitStart={onUserOrbitStart}
       />
     </Canvas>
   );
