@@ -1,4 +1,4 @@
-import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as po,M as fo,e as ho,R as U,H as go,f as p}from"./three-vendor-CWi7zrXV.js";import{r as o}from"./ui-vendor-DWxq7iql.js";import{a as h}from"./index-joK9X6E0.js";const D="https://www.gstatic.com/draco/versioned/decoders/1.5.7/",K="/Proyecto_3D_Materno/models/Madre.glb",X="/Proyecto_3D_Materno/models/bebe.glb";y.preload(K,D);y.preload(X,D);const wo=`
+import{j as e,C as Se,A as Me,u as Q,b as _,d as t,S as W,F as Z,L as Ce,M as De,e as ye,f as ee,H as k,R as G,V as $,O as Re,g as D}from"./three-vendor-BSvuLwg5.js";import{r as o}from"./ui-vendor-Dr7BTwvn.js";import{a as P}from"./index-Cp0CDoz1.js";const A={full:{pos:[0,.03,2.95],target:[0,-.02,0]},womb:{pos:[.1,-.14,1.38],target:[-.01,-.2,.14]},plaque:{pos:[0,-.44,1.56],target:[0,-.66,.42]}},z="https://www.gstatic.com/draco/versioned/decoders/1.5.7/",oe="/Proyecto_3D_Materno/models/Madre.glb",re="/Proyecto_3D_Materno/models/bebe.glb";_.preload(oe,z);_.preload(re,z);const We=`
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
@@ -10,7 +10,7 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,xo=`
+`,Pe=`
   uniform vec3 uSkinColor;
   uniform vec3 uSssColor;
   uniform vec3 uDeepShadowColor;
@@ -54,7 +54,7 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
 
     gl_FragColor = vec4(color, 1.0);
   }
-`,I=`
+`,J=`
   varying vec3 vNormalWorld;
   varying vec3 vWorldPos;
   varying vec3 vViewDir;
@@ -80,11 +80,11 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,So=`
+`,Ne=`
   void main() {
     gl_FragColor = vec4(0.0);
   }
-`,bo=`
+`,Le=`
   uniform vec3 uShellColor;
   uniform vec3 uDeepColor;
   uniform vec3 uRimColor;
@@ -153,7 +153,7 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
 
     gl_FragColor = vec4(color, targetAlpha);
   }
-`,Mo=`
+`,Ee=`
   varying vec3 vLocalPos;
   varying vec3 vNormalLocal;
   varying vec3 vNormalWorld;
@@ -167,7 +167,7 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,Co=`
+`,Fe=`
   uniform vec3 uStoneLight;
   uniform vec3 uStoneMid;
   uniform vec3 uStonePore;
@@ -209,13 +209,11 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     vec3 N = normalize(vNormalWorld);
     vec3 V = normalize(vViewDir);
 
-    // 1. Horizontal Sedimentary Bedding Veins (1 trilinear lookup + analytical harmonics)
     vec3 veinCoord = vec3(vLocalPos.x * 3.6, vLocalPos.y * 34.0, vLocalPos.z * 3.6);
     float n1 = noise3(veinCoord);
     float veins = sin(vLocalPos.y * 68.0 + n1 * 5.2 + sin(vLocalPos.x * 9.0 + n1 * 3.1) * 1.1) * 0.5 + 0.5;
     float fineGrain = fract(sin(dot(floor(vLocalPos * 140.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
 
-    // 2. Natural Capillary Travertine Pores (2 trilinear lookups instead of 4)
     vec3 poreCoord = vec3(vLocalPos.x * 34.0, vLocalPos.y * 145.0, vLocalPos.z * 34.0);
     float poreCoarse = noise3(poreCoord);
     float poreFine = noise3(poreCoord * 2.3 + vec3(2.3, 5.1, 1.9));
@@ -229,7 +227,6 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     vec3 stoneColor = mix(uStoneMid, uStoneLight, veins * 0.68 + fineGrain * 0.32);
     stoneColor = mix(stoneColor, uStonePore, poreMask * 0.68);
 
-    // 3. Architectural Studio Lighting & Bevel Highlight
     vec3 keyDir = normalize(vec3(0.45, 0.72, 0.68));
     vec3 fillDir = normalize(vec3(-0.60, 0.48, 0.52));
     float diffKey = clamp(dot(N, keyDir), 0.0, 1.0);
@@ -243,7 +240,6 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     float bevelSpec = pow(max(dot(N, H), 0.0), 32.0) * 0.12 * (1.0 - poreMask);
     color += vec3(1.0, 0.98, 0.94) * bevelSpec;
 
-    // 4. Embedded 2700K Up-Light on Top Face
     if (vNormalLocal.y > 0.1) {
       float radialDist = length(vLocalPos.xz * vec2(1.0, 1.18));
       float upLightRing = exp(-pow((radialDist - 0.33) * 5.8, 2.0));
@@ -252,14 +248,13 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
       color += uGlowColor * topGlow * mix(0.38, 0.68, uDarkTheme);
     }
 
-    // 5. Underside reflection from brass cove
     if (vNormalLocal.y < -0.3) {
       color += uGlowColor * uWarmLight * mix(0.35, 0.65, uDarkTheme);
     }
 
     gl_FragColor = vec4(color, 1.0);
   }
-`,yo=`
+`,Ae=`
   varying vec3 vLocalPos;
   varying vec3 vNormalWorld;
   varying vec3 vViewDir;
@@ -271,7 +266,7 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
     vViewDir = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,Do=`
+`,ke=`
   uniform float uWarmLight;
   uniform float uDarkTheme;
 
@@ -298,14 +293,14 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
 
     gl_FragColor = vec4(finalColor, 1.0);
   }
-`,Wo=`
+`,_e=`
   varying vec2 vUv;
 
   void main() {
     vUv = uv * 2.0 - 1.0;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
-`,Po=`
+`,ze=`
   uniform float uWarmLight;
   uniform float uDarkTheme;
 
@@ -329,4 +324,4 @@ import{j as e,C as co,A as mo,O as vo,u as uo,b as y,d as r,S as f,F as O,L as p
 
     gl_FragColor = vec4(color, alpha);
   }
-`,Lo=({progressRef:W,finishId:x,warmLightOn:g,sanctuaryDark:a,isMobile:n})=>{const{gl:S,scene:F,camera:k,invalidate:w}=uo(),b=y(K,D),_=y(X,D),P=o.useRef(null),M=o.useRef(.95),c=o.useRef(g?1:.12),d=o.useRef(a?1:0),C=o.useRef(.06),l=h[x],L=o.useMemo(()=>new r(a?l.darkShell:l.lightShell),[l,a]),Y=o.useMemo(()=>new r(a?l.darkDeep:l.lightDeep),[l,a]),q=o.useMemo(()=>new r(a?l.darkRim:l.lightRim),[l,a]),T=o.useMemo(()=>new r(l.wombGlowColor),[l]),Z=o.useMemo(()=>new r(a?"#DED2C1":"#F3ECE1"),[a]),$=o.useMemo(()=>new r(a?"#BAA995":"#DFD3C2"),[a]),J=o.useMemo(()=>new r(a?"#70604E":"#9C8A74"),[a]),R=o.useMemo(()=>new f({vertexShader:wo,fragmentShader:xo,uniforms:{uSkinColor:{value:new r("#F5D5BC")},uSssColor:{value:new r("#F2954E")},uDeepShadowColor:{value:new r("#C49574")},uWarmLight:{value:1}},depthWrite:!0,depthTest:!0}),[]),z=o.useMemo(()=>new f({vertexShader:I,fragmentShader:So,colorWrite:!1,depthWrite:!0,depthTest:!0,side:O}),[]),i=o.useMemo(()=>new f({vertexShader:I,fragmentShader:bo,uniforms:{uShellColor:{value:new r(h.porcelain_silk.lightShell)},uDeepColor:{value:new r(h.porcelain_silk.lightDeep)},uRimColor:{value:new r(h.porcelain_silk.lightRim)},uWombGlowColor:{value:new r(h.porcelain_silk.wombGlowColor)},uReveal:{value:.95},uWarmLight:{value:1},uWombCenterAlpha:{value:h.porcelain_silk.wombCenterAlpha}},transparent:!0,depthWrite:!1,depthTest:!0,depthFunc:po,side:O}),[]),u=o.useMemo(()=>new f({vertexShader:Mo,fragmentShader:Co,uniforms:{uStoneLight:{value:new r("#F3ECE1")},uStoneMid:{value:new r("#DFD3C2")},uStonePore:{value:new r("#9C8A74")},uGlowColor:{value:new r("#FFA84C")},uWarmLight:{value:1},uDarkTheme:{value:0}}}),[]),N=o.useMemo(()=>new f({vertexShader:yo,fragmentShader:Do,uniforms:{uWarmLight:{value:1},uDarkTheme:{value:0}}}),[]),E=o.useMemo(()=>new f({vertexShader:Wo,fragmentShader:Po,uniforms:{uWarmLight:{value:1},uDarkTheme:{value:0}},transparent:!0,depthWrite:!1}),[]),A=o.useMemo(()=>new fo({color:new r("#FFB866"),transparent:!0,opacity:.55,depthWrite:!1}),[]),Q=o.useMemo(()=>{const m=_.scene.clone(!0);return m.traverse(s=>{if(s.isMesh){const v=s;v.material=R,v.renderOrder=1}}),m},[_.scene,R]),oo=o.useMemo(()=>{const m=b.scene.clone(!0);return m.traverse(s=>{if(s.isMesh){const v=s;v.material=z,v.renderOrder=2}}),m},[b.scene,z]),eo=o.useMemo(()=>{const m=b.scene.clone(!0);return m.traverse(s=>{if(s.isMesh){const v=s;v.material=i,v.renderOrder=3}}),m},[b.scene,i]);o.useEffect(()=>{S.compile(F,k),w()},[S,F,k,w]),o.useEffect(()=>{w()},[x,g,a,w]),ho((m,s)=>{const t=Math.min(s,.05)*6.5,V=W.current,j=.35+Math.min(1,V*1.35)*.65,H=p.lerp(-.42,.38,V),G=g?1:.08,B=a?1:0;M.current=p.lerp(M.current,j,t),C.current=p.lerp(C.current,H,t),c.current=p.lerp(c.current,G,t),d.current=p.lerp(d.current,B,t),P.current&&(P.current.rotation.y=C.current),i.uniforms.uReveal.value=M.current,i.uniforms.uWarmLight.value=c.current,i.uniforms.uShellColor.value.lerp(L,t),i.uniforms.uDeepColor.value.lerp(Y,t),i.uniforms.uRimColor.value.lerp(q,t),i.uniforms.uWombGlowColor.value.lerp(T,t),i.uniforms.uWombCenterAlpha.value=p.lerp(i.uniforms.uWombCenterAlpha.value,l.wombCenterAlpha,t),R.uniforms.uWarmLight.value=c.current,u.uniforms.uStoneLight.value.lerp(Z,t),u.uniforms.uStoneMid.value.lerp($,t),u.uniforms.uStonePore.value.lerp(J,t),u.uniforms.uGlowColor.value.lerp(T,t),u.uniforms.uWarmLight.value=c.current,u.uniforms.uDarkTheme.value=d.current,N.uniforms.uWarmLight.value=c.current,N.uniforms.uDarkTheme.value=d.current,E.uniforms.uWarmLight.value=c.current,E.uniforms.uDarkTheme.value=d.current,A.opacity=p.lerp(.1,.55,c.current);const to=Math.abs(j-M.current),lo=Math.abs(H-C.current),io=Math.abs(G-c.current),so=Math.abs(B-d.current),no=Math.abs(i.uniforms.uShellColor.value.r-L.r)+Math.abs(i.uniforms.uShellColor.value.g-L.g);(to>.002||lo>.002||io>.002||so>.002||no>.003)&&w()});const ro=n?2:4,ao=n?40:64;return e.jsxs("group",{ref:P,position:[0,-.62,0],scale:.8,rotation:[0,.06,0],children:[e.jsx("group",{position:[-.01,.21,.095],scale:.275,children:e.jsx("primitive",{object:Q})}),e.jsx("primitive",{object:oo,position:[0,0,0],scale:1}),e.jsx("primitive",{object:eo,position:[0,0,0],scale:1}),e.jsxs("group",{position:[0,0,.01],children:[e.jsx(U,{args:[1.34,.132,1.34],radius:.008,smoothness:ro,position:[0,-.066,0],material:u}),e.jsxs("mesh",{position:[0,.001,-.01],rotation:[-Math.PI/2,0,0],children:[e.jsx("ringGeometry",{args:[.29,.38,ao]}),e.jsx("primitive",{object:A,attach:"material"})]}),e.jsx(U,{args:[1.12,.042,1.12],radius:.004,smoothness:2,position:[0,-.151,0],material:N}),e.jsxs("mesh",{position:[0,-.173,0],rotation:[-Math.PI/2,0,0],children:[e.jsx("planeGeometry",{args:[1.86,1.86]}),e.jsx("primitive",{object:E,attach:"material"})]})]})]})},Ro=()=>e.jsx(go,{center:!0,children:e.jsx("div",{className:"px-5 py-2.5 bg-[#FAF7F2]/95 border border-[#E5DEC9] text-center shadow-sm whitespace-nowrap rounded-full",children:e.jsx("p",{className:"font-serif italic text-sm text-[#8C6D46]",children:"Desvelando escultura..."})})}),ko=({progressRef:W,finishId:x,sanctuaryDark:g,invalidateRef:a,isMobile:n})=>e.jsxs(co,{frameloop:"demand",dpr:n?[1,1.25]:[1,1.5],camera:{position:[0,.03,2.95],fov:40},gl:{antialias:!n,alpha:!0,powerPreference:n?"default":"high-performance",toneMapping:mo,toneMappingExposure:1.04},onCreated:({invalidate:S})=>{a.current=S},style:{touchAction:"pan-y"},className:"cursor-grab active:cursor-grabbing w-full h-full",children:[e.jsx("ambientLight",{intensity:.95,color:"#fffcf8"}),e.jsx("directionalLight",{position:[2.5,3.5,2.5],intensity:1.15,color:"#fffdfa"}),e.jsx(o.Suspense,{fallback:e.jsx(Ro,{}),children:e.jsx(Lo,{progressRef:W,finishId:x,warmLightOn:!0,sanctuaryDark:g,isMobile:n})}),e.jsx(vo,{makeDefault:!0,enablePan:!1,enableZoom:!1,enableDamping:!0,dampingFactor:n?.08:.045,rotateSpeed:n?.85:.75,minPolarAngle:Math.PI/4.2,maxPolarAngle:Math.PI/1.85,target:[0,-.02,0]})]});export{ko as default};
+`,Te=({progressRef:y,finishId:S,warmLightOn:i,sanctuaryDark:r,isMobile:l,cameraPreset:a,engravedText:m,showHotspots:x,onSelectCameraPreset:w})=>{const{gl:v,scene:p,camera:b,invalidate:d}=Q(),M=_(oe,z),L=_(re,z),N=o.useRef(null),E=o.useRef(.95),f=o.useRef(i?1:0),R=o.useRef(r?1:0),F=o.useRef(.06),s=P[S],T=o.useMemo(()=>new t(r?s.darkShell:s.lightShell),[s,r]),te=o.useMemo(()=>new t(r?s.darkDeep:s.lightDeep),[s,r]),ae=o.useMemo(()=>new t(r?s.darkRim:s.lightRim),[s,r]),H=o.useMemo(()=>new t(s.wombGlowColor),[s]),le=o.useMemo(()=>new t(r?"#DED2C1":"#F3ECE1"),[r]),ie=o.useMemo(()=>new t(r?"#BAA995":"#DFD3C2"),[r]),ne=o.useMemo(()=>new t(r?"#70604E":"#9C8A74"),[r]),j=o.useMemo(()=>new W({vertexShader:We,fragmentShader:Pe,uniforms:{uSkinColor:{value:new t("#F5D5BC")},uSssColor:{value:new t("#F2954E")},uDeepShadowColor:{value:new t("#C49574")},uWarmLight:{value:i?1:0}},depthWrite:!0,depthTest:!0}),[]),I=o.useMemo(()=>new W({vertexShader:J,fragmentShader:Ne,colorWrite:!1,depthWrite:!0,depthTest:!0,side:Z}),[]),c=o.useMemo(()=>new W({vertexShader:J,fragmentShader:Le,uniforms:{uShellColor:{value:new t(P.porcelain_silk.lightShell)},uDeepColor:{value:new t(P.porcelain_silk.lightDeep)},uRimColor:{value:new t(P.porcelain_silk.lightRim)},uWombGlowColor:{value:new t(P.porcelain_silk.wombGlowColor)},uReveal:{value:.95},uWarmLight:{value:i?1:0},uWombCenterAlpha:{value:P.porcelain_silk.wombCenterAlpha}},transparent:!0,depthWrite:!1,depthTest:!0,depthFunc:Ce,side:Z}),[]),C=o.useMemo(()=>new W({vertexShader:Ee,fragmentShader:Fe,uniforms:{uStoneLight:{value:new t("#F3ECE1")},uStoneMid:{value:new t("#DFD3C2")},uStonePore:{value:new t("#9C8A74")},uGlowColor:{value:new t("#FFA84C")},uWarmLight:{value:i?1:0},uDarkTheme:{value:r?1:0}}}),[]),B=o.useMemo(()=>new W({vertexShader:Ae,fragmentShader:ke,uniforms:{uWarmLight:{value:i?1:0},uDarkTheme:{value:r?1:0}}}),[]),se=o.useMemo(()=>new De({color:new t("#C9A46B"),metalness:.72,roughness:.3}),[]),V=o.useMemo(()=>new W({vertexShader:_e,fragmentShader:ze,uniforms:{uWarmLight:{value:i?1:0},uDarkTheme:{value:r?1:0}},transparent:!0,depthWrite:!1}),[]),q=o.useMemo(()=>new ye({color:new t("#FFB866"),transparent:!0,opacity:i?.55:0,depthWrite:!1}),[]),ce=o.useMemo(()=>{const h=L.scene.clone(!0);return h.traverse(u=>{if(u.isMesh){const g=u;g.material=j,g.renderOrder=1}}),h},[L.scene,j]),me=o.useMemo(()=>{const h=M.scene.clone(!0);return h.traverse(u=>{if(u.isMesh){const g=u;g.material=I,g.renderOrder=2}}),h},[M.scene,I]),ue=o.useMemo(()=>{const h=M.scene.clone(!0);return h.traverse(u=>{if(u.isMesh){const g=u;g.material=c,g.renderOrder=3}}),h},[M.scene,c]);o.useEffect(()=>{v.compile(p,b),d()},[v,p,b,d]),o.useEffect(()=>{d()},[S,i,r,a,m,d]),ee((h,u)=>{const n=Math.min(u,.05)*6.5,K=y.current,O=a==="womb"?1:.45+Math.min(1,K*1.25)*.55,X=a==="plaque"?0:a==="womb"?.08:D.lerp(-.42,.38,K),U=i?1:0,Y=r?1:0;E.current=D.lerp(E.current,O,n),F.current=D.lerp(F.current,X,n),f.current=D.lerp(f.current,U,n),R.current=D.lerp(R.current,Y,n),N.current&&(N.current.rotation.y=F.current),c.uniforms.uReveal.value=E.current,c.uniforms.uWarmLight.value=f.current,c.uniforms.uShellColor.value.lerp(T,n),c.uniforms.uDeepColor.value.lerp(te,n),c.uniforms.uRimColor.value.lerp(ae,n),c.uniforms.uWombGlowColor.value.lerp(H,n),c.uniforms.uWombCenterAlpha.value=D.lerp(c.uniforms.uWombCenterAlpha.value,s.wombCenterAlpha,n),j.uniforms.uWarmLight.value=f.current,C.uniforms.uStoneLight.value.lerp(le,n),C.uniforms.uStoneMid.value.lerp(ie,n),C.uniforms.uStonePore.value.lerp(ne,n),C.uniforms.uGlowColor.value.lerp(H,n),C.uniforms.uWarmLight.value=f.current,C.uniforms.uDarkTheme.value=R.current,B.uniforms.uWarmLight.value=f.current,B.uniforms.uDarkTheme.value=R.current,V.uniforms.uWarmLight.value=f.current,V.uniforms.uDarkTheme.value=R.current,q.opacity=D.lerp(0,.55,f.current);const he=Math.abs(O-E.current),ge=Math.abs(X-F.current),xe=Math.abs(U-f.current),we=Math.abs(Y-R.current),be=Math.abs(c.uniforms.uShellColor.value.r-T.r)+Math.abs(c.uniforms.uShellColor.value.g-T.g);(he>.002||ge>.002||xe>.002||we>.002||be>.003)&&d()});const ve=l?2:4,pe=l?40:64,de=m.trim()||"EMILIANO · SEMANA 28",fe=m.trim().length>0||a==="plaque";return e.jsxs("group",{ref:N,position:[0,-.62,0],scale:.8,rotation:[0,.06,0],children:[e.jsx("group",{position:[-.01,.21,.095],scale:.275,children:e.jsx("primitive",{object:ce})}),e.jsx("primitive",{object:me,position:[0,0,0],scale:1}),e.jsx("primitive",{object:ue,position:[0,0,0],scale:1}),x&&a==="full"&&w&&e.jsxs(e.Fragment,{children:[e.jsx(k,{position:[.24,.49,.34],center:!0,zIndexRange:[12,0],children:e.jsxs("button",{type:"button",onClick:()=>w("womb"),className:"pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105",children:[e.jsx("span",{className:"w-2 h-2 rounded-full bg-[#D4B07B] hotspot-pulse"}),e.jsx("span",{children:"Ver bebé en el vientre"})]})}),e.jsx(k,{position:[-.36,-.01,.68],center:!0,zIndexRange:[12,0],children:e.jsxs("button",{type:"button",onClick:()=>w("plaque"),className:"pointer-events-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1B1714]/85 text-[#FAF7F2] border border-[#D4B07B]/70 text-[10px] tracking-wide whitespace-nowrap shadow-md hover:border-[#D4B07B] transition-transform hover:scale-105",children:[e.jsx("span",{className:"text-[#D4B07B]",children:"✦"}),e.jsx("span",{children:"Placa grabada"})]})})]}),e.jsxs("group",{position:[0,0,.01],children:[e.jsx(G,{args:[1.34,.132,1.34],radius:.008,smoothness:ve,position:[0,-.066,0],material:C}),e.jsx(G,{args:[.56,.048,.014],radius:.002,smoothness:2,position:[0,-.066,.672],material:se}),fe&&e.jsx(k,{position:[0,-.066,.684],center:!0,zIndexRange:[15,0],children:e.jsx("div",{className:"pointer-events-none select-none px-3 py-0.5 bg-gradient-to-b from-[#E5C996] via-[#C8A164] to-[#A67D42] border border-[#F5DFB6]/70 shadow-sm whitespace-nowrap",children:e.jsx("span",{className:"font-serif italic text-[11px] sm:text-xs tracking-[0.14em] text-[#231C14] font-medium block",children:de})})}),e.jsxs("mesh",{position:[0,.001,-.01],rotation:[-Math.PI/2,0,0],children:[e.jsx("ringGeometry",{args:[.29,.38,pe]}),e.jsx("primitive",{object:q,attach:"material"})]}),e.jsx(G,{args:[1.12,.042,1.12],radius:.004,smoothness:2,position:[0,-.151,0],material:B}),e.jsxs("mesh",{position:[0,-.173,0],rotation:[-Math.PI/2,0,0],children:[e.jsx("planeGeometry",{args:[1.86,1.86]}),e.jsx("primitive",{object:V,attach:"material"})]})]})]})},je=({cameraPreset:y,cameraMoveNonce:S,isMobile:i,onUserOrbitStart:r})=>{const l=o.useRef(null),{camera:a,invalidate:m}=Q(),x=o.useRef(!1),w=o.useRef(!1),v=o.useRef(new $(...A.full.pos)),p=o.useRef(new $(...A.full.target));return o.useEffect(()=>{!w.current&&l.current&&(l.current.target.set(...A.full.target),l.current.update(),w.current=!0)},[]),o.useEffect(()=>{const b=A[y];v.current.set(...b.pos),p.current.set(...b.target),S>0&&(x.current=!0,m())},[y,S,m]),ee((b,d)=>{if(!x.current||!l.current)return;const M=Math.min(1,d*4.5);a.position.lerp(v.current,M),l.current.target.lerp(p.current,M),l.current.update();const L=a.position.distanceTo(v.current),N=l.current.target.distanceTo(p.current);L<.006&&N<.006?(a.position.copy(v.current),l.current.target.copy(p.current),l.current.update(),x.current=!1):m()}),e.jsx(Re,{ref:l,makeDefault:!0,enablePan:!1,enableZoom:!1,enableDamping:!0,dampingFactor:i?.08:.045,rotateSpeed:i?.85:.75,minPolarAngle:Math.PI/4.2,maxPolarAngle:Math.PI/1.85,onStart:()=>{x.current=!1,r==null||r()}})},Be=()=>e.jsx(k,{center:!0,children:e.jsx("div",{className:"px-5 py-2.5 bg-[#FAF7F2]/95 border border-[#E5DEC9] text-center shadow-sm whitespace-nowrap rounded-full",children:e.jsx("p",{className:"font-serif italic text-sm text-[#8C6D46]",children:"Desvelando escultura..."})})}),Ie=({progressRef:y,finishId:S,warmLightOn:i,sanctuaryDark:r,invalidateRef:l,isMobile:a,cameraPreset:m,cameraMoveNonce:x,engravedText:w,showHotspots:v,onSelectCameraPreset:p,onUserOrbitStart:b})=>e.jsxs(Se,{frameloop:"demand",dpr:a?[1,1.25]:[1,1.5],camera:{position:[0,.03,2.95],fov:40},gl:{antialias:!a,alpha:!0,powerPreference:a?"default":"high-performance",toneMapping:Me,toneMappingExposure:1.04},onCreated:({invalidate:d})=>{l.current=d},style:{touchAction:"pan-y"},className:"cursor-grab active:cursor-grabbing w-full h-full",children:[e.jsx("ambientLight",{intensity:.95,color:"#fffcf8"}),e.jsx("directionalLight",{position:[2.5,3.5,2.5],intensity:1.15,color:"#fffdfa"}),e.jsx(o.Suspense,{fallback:e.jsx(Be,{}),children:e.jsx(Te,{progressRef:y,finishId:S,warmLightOn:i,sanctuaryDark:r,isMobile:a,cameraPreset:m,engravedText:w,showHotspots:v,onSelectCameraPreset:p})}),e.jsx(je,{cameraPreset:m,cameraMoveNonce:x,isMobile:a,onUserOrbitStart:b})]});export{Ie as default};
