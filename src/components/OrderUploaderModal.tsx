@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useEffect, useId, useRef, useState } from 'react';
 import { z } from 'zod';
-import { Check, Sparkles, Upload, X } from 'lucide-react';
+import { Sparkles, Upload, X } from 'lucide-react';
 import { useProductStore } from '../store/useProductStore';
 import {
   EDITION_PORTRAIT_IMAGES,
@@ -8,7 +8,7 @@ import {
   PRODUCT_TIERS,
   formatCOP,
 } from '../data/products';
-import { FINISH_PRESETS } from '../data/finishes';
+import { FINISH_PRESETS, ResinFinishId } from '../data/finishes';
 import { ProductTierId } from '../types/product';
 import type { CameraPresetId } from './SculptureStage3D';
 
@@ -31,17 +31,41 @@ const WIZARD_STEPS: { id: WizardStep; code: string; label: string; mobileLabel: 
   { id: 4, code: '04', label: 'Pago y Resumen', mobileLabel: 'Pago' },
 ];
 
-const TIER_CONCISE_TAGLINE: Record<ProductTierId, string> = {
-  1: 'Alabastro sin luz LED',
-  2: 'Travertino · LED 2700K',
-  3: 'Silueta a medida + LED + Placa',
-};
-
-const MODAL_CAMERA_VIEWS: { id: CameraPresetId; label: string; mobileLabel: string }[] = [
-  { id: 'full', label: 'Completa', mobileLabel: 'Completa' },
-  { id: 'womb', label: 'Zoom Bebé', mobileLabel: 'Bebé' },
-  { id: 'plaque', label: 'Placa', mobileLabel: 'Placa' },
+const STEP1_TIERS: {
+  id: ProductTierId;
+  mobileName: string;
+  desktopName: string;
+  priceLabel: string;
+  detail: string;
+}[] = [
+  {
+    id: 1,
+    mobileName: 'I. Esencia',
+    desktopName: 'I. Esencia Gestacional',
+    priceLabel: '$249.000',
+    detail: 'Sin LED',
+  },
+  {
+    id: 2,
+    mobileName: 'II. Luz de Vida',
+    desktopName: 'II. Luz de Vida',
+    priceLabel: '$369.000',
+    detail: 'LED 2700K',
+  },
+  {
+    id: 3,
+    mobileName: 'III. Total',
+    desktopName: 'III. Maternidad Total',
+    priceLabel: '$690.000',
+    detail: 'Silueta + Placa',
+  },
 ];
+
+const RESIN_SHORT_NAMES: Record<ResinFinishId, string> = {
+  porcelain_silk: 'Marfil',
+  champagne_quartz: 'Champán',
+  honey_amber: 'Ámbar',
+};
 
 interface OrderWizardContentProps {
   isOpen: boolean;
@@ -379,269 +403,188 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
         </nav>
       </div>
 
-      <form onSubmit={handleFormSubmit} className="p-4 sm:px-7 sm:py-5 space-y-5">
+      <form onSubmit={handleFormSubmit} className="p-3.5 sm:px-7 sm:py-5 space-y-5">
         {/* ================================================================= */}
-        {/* STEP 1: INTERACTIVE 3D STAGE + ONE-TAP EDITION & RESIN CONSOLE     */}
+        {/* STEP 1: FULL-STAGE 3D SHOWCASE + ULTRA-COMPACT CONTROLS           */}
         {/* ================================================================= */}
         {step === 1 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
-              {/* Left / Top Column: Single Live Interactive 3D Viewport */}
-              <div
-                className={`lg:col-span-6 relative h-[235px] sm:h-[290px] lg:h-full lg:min-h-[345px] border overflow-hidden transition-colors duration-300 ${
-                  effectiveSanctuaryDark
-                    ? 'bg-sanctuary-radial border-[#D4B07B]/35'
-                    : 'bg-[#F2ECE1]/75 border-[#E5DEC9]'
-                }`}
-                style={{ touchAction: 'pan-y' }}
-              >
-                {/* Top HUD: Camera Presets + Eco 3D + Sanctuary Atmosphere */}
-                <div className="absolute top-2 inset-x-2 sm:top-2.5 sm:inset-x-2.5 z-10 flex items-center justify-between gap-1 pointer-events-none">
-                  <div
-                    className={`pointer-events-auto inline-flex items-center p-0.5 rounded-full border backdrop-blur-md transition-colors ${
-                      effectiveSanctuaryDark
-                        ? 'glass-dock-dark'
-                        : 'bg-[#FAF7F2]/90 border-[#E5DEC9] shadow-sm'
-                    }`}
-                  >
-                    {MODAL_CAMERA_VIEWS.map((view) => {
-                      const active = cameraPreset === view.id;
-                      return (
-                        <button
-                          key={view.id}
-                          type="button"
-                          onClick={() => selectCameraPreset(view.id)}
-                          aria-pressed={active}
-                          className={`px-1.5 sm:px-2.5 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.06em] sm:tracking-[0.12em] transition-colors whitespace-nowrap ${
-                            active
-                              ? effectiveSanctuaryDark
-                                ? 'bg-[#D4B07B] text-[#120E0C] font-medium'
-                                : 'bg-[#2C2825] text-[#FAF7F2] font-medium'
-                              : effectiveSanctuaryDark
-                                ? 'text-[#E8DFD3] hover:text-white'
-                                : 'text-[#6E665E] hover:text-[#2C2825]'
-                          }`}
-                        >
-                          <span className="sm:hidden">{view.mobileLabel}</span>
-                          <span className="hidden sm:inline">{view.label}</span>
-                        </button>
-                      );
-                    })}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-5 items-stretch">
+            {/* Left / Top Column (Protagonist 3D Stage) */}
+            <div
+              className={`lg:col-span-7 relative h-[300px] sm:h-[340px] lg:h-[430px] border overflow-hidden transition-colors duration-300 ${
+                effectiveSanctuaryDark
+                  ? 'bg-sanctuary-radial border-[#D4B07B]/35'
+                  : 'bg-[#F2ECE1]/75 border-[#E5DEC9]'
+              }`}
+              style={{ touchAction: 'pan-y' }}
+            >
+              {/* Two Discrete Corner Micro-Pills (Clear Sculpture Silhouette) */}
+              <div className="absolute top-2.5 inset-x-2.5 z-10 flex items-center justify-between gap-2 pointer-events-none">
+                <button
+                  type="button"
+                  onClick={handleToggleUltrasound}
+                  aria-pressed={ultrasoundMode}
+                  className={`pointer-events-auto px-2.5 py-1 rounded-full border text-[10px] uppercase tracking-[0.12em] inline-flex items-center gap-1 transition-colors backdrop-blur-md whitespace-nowrap ${
+                    ultrasoundMode
+                      ? 'bg-[#C49658] border-[#C49658] text-[#120E0C] font-medium'
+                      : effectiveSanctuaryDark
+                        ? 'glass-dock-dark text-[#D4B07B] hover:text-[#F3DFB8]'
+                        : 'bg-[#FAF7F2]/90 border-[#E5DEC9] text-[#8C6D46] hover:text-[#2C2825] shadow-sm'
+                  }`}
+                >
+                  <Sparkles className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />
+                  <span>Eco 3D</span>
+                </button>
 
-                    <span
-                      className={`h-3 w-[1px] mx-0.5 sm:mx-1 ${
-                        effectiveSanctuaryDark ? 'bg-[#3D352E]' : 'bg-[#E5DEC9]'
-                      }`}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={handleToggleUltrasound}
-                      aria-pressed={ultrasoundMode}
-                      className={`px-1.5 sm:px-2 py-1 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.06em] sm:tracking-[0.12em] inline-flex items-center gap-0.5 sm:gap-1 transition-colors whitespace-nowrap ${
-                        ultrasoundMode
-                          ? 'bg-[#C49658] text-[#120E0C] font-medium'
-                          : effectiveSanctuaryDark
-                            ? 'text-[#D4B07B] hover:text-[#F3DFB8]'
-                            : 'text-[#8C6D46] hover:text-[#2C2825]'
-                      }`}
-                    >
-                      <Sparkles className="w-2.5 h-2.5 shrink-0" aria-hidden="true" />
-                      <span>Eco 3D</span>
-                    </button>
-                  </div>
-
-                  {selectedTier !== 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setModalSanctuaryDark((v) => !v)}
-                      aria-label={
-                        modalSanctuaryDark
-                          ? 'Cambiar a iluminación de día'
-                          : 'Activar Santuario Nocturno 2700K'
-                      }
-                      className={`pointer-events-auto shrink-0 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full border text-[10px] font-serif italic transition-colors whitespace-nowrap backdrop-blur-md ${
-                        effectiveSanctuaryDark
-                          ? 'glass-dock-dark text-[#FFB866]'
-                          : 'bg-[#FAF7F2]/90 border-[#E5DEC9] text-[#6E665E] hover:text-[#2C2825] shadow-sm'
-                      }`}
-                    >
-                      <span
-                        className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${
-                          effectiveSanctuaryDark
-                            ? 'bg-[#FFB866] shadow-[0_0_8px_#FFA84C]'
-                            : 'bg-[#2C2825]'
-                        }`}
-                      />
-                      <span>{effectiveSanctuaryDark ? 'Noche' : 'Día'}</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Single Shared WebGL Stage (Mounted Only While Modal Step 1 is Active) */}
-                {isOpen && step === 1 && (
-                  <Suspense
-                    fallback={
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span
-                          className={`px-4 py-1.5 rounded-full text-xs font-serif italic border ${
-                            effectiveSanctuaryDark
-                              ? 'glass-dock-dark text-[#D4B07B]'
-                              : 'bg-[#FAF7F2]/95 border-[#E5DEC9] text-[#8C6D46]'
-                          }`}
-                        >
-                          Cargando escultura 3D...
-                        </span>
-                      </div>
+                {selectedTier !== 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setModalSanctuaryDark((v) => !v)}
+                    aria-label={
+                      modalSanctuaryDark
+                        ? 'Cambiar a iluminación de día'
+                        : 'Activar Santuario Nocturno 2700K'
                     }
+                    className={`pointer-events-auto px-2.5 py-1 rounded-full border text-[10px] tracking-[0.08em] inline-flex items-center gap-1.5 transition-colors backdrop-blur-md whitespace-nowrap ${
+                      effectiveSanctuaryDark
+                        ? 'glass-dock-dark text-[#FFB866]'
+                        : 'bg-[#FAF7F2]/90 border-[#E5DEC9] text-[#6E665E] hover:text-[#2C2825] shadow-sm'
+                    }`}
                   >
-                    <SculptureStage3D
-                      progressRef={progressRef}
-                      finishId={activeFinish}
-                      warmLightOn={selectedTier !== 1}
-                      sanctuaryDark={effectiveSanctuaryDark}
-                      invalidateRef={invalidateRef}
-                      isMobile={isMobileViewport}
-                      cameraPreset={cameraPreset}
-                      cameraMoveNonce={cameraMoveNonce}
-                      ultrasoundMode={ultrasoundMode}
-                      engravedText={stageEngravedText}
+                    <span
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        effectiveSanctuaryDark
+                          ? 'bg-[#FFB866] shadow-[0_0_8px_#FFA84C]'
+                          : 'bg-[#2C2825]'
+                      }`}
                     />
-                  </Suspense>
+                    <span>{effectiveSanctuaryDark ? '2700K' : 'Día'}</span>
+                  </button>
                 )}
-
-                {/* Bottom HUD: Live Active Combination + Orbit Hint */}
-                <div className="pointer-events-none absolute bottom-2 inset-x-2.5 z-10 flex items-center justify-between gap-2">
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] border truncate max-w-[66%] backdrop-blur-md ${
-                      effectiveSanctuaryDark
-                        ? 'glass-dock-dark text-[#EAE2D6]'
-                        : 'bg-[#FAF7F2]/90 border-[#E5DEC9] text-[#2C2825] shadow-sm'
-                    }`}
-                  >
-                    {currentTier.name} · {currentFinish.name}
-                  </span>
-                  <span
-                    className={`font-serif italic text-[10px] shrink-0 px-2 py-0.5 rounded-full ${
-                      effectiveSanctuaryDark
-                        ? 'text-[#D4B07B] bg-[#120E0C]/45'
-                        : 'text-[#6E665E] bg-[#FAF7F2]/75'
-                    }`}
-                  >
-                    Arrastra 360° ↔
-                  </span>
-                </div>
               </div>
 
-              {/* Right / Bottom Column: Fast One-Tap Edition & Resin Console */}
-              <div className="lg:col-span-6 flex flex-col justify-between space-y-4">
-                {/* 01 · Edition Selector */}
-                <div className="space-y-2">
+              {/* Single Shared WebGL Stage (Mounted Only While Modal Step 1 is Active) */}
+              {isOpen && step === 1 && (
+                <Suspense
+                  fallback={
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span
+                        className={`px-4 py-1.5 rounded-full text-xs font-serif italic border ${
+                          effectiveSanctuaryDark
+                            ? 'glass-dock-dark text-[#D4B07B]'
+                            : 'bg-[#FAF7F2]/95 border-[#E5DEC9] text-[#8C6D46]'
+                        }`}
+                      >
+                        Cargando escultura 3D...
+                      </span>
+                    </div>
+                  }
+                >
+                  <SculptureStage3D
+                    progressRef={progressRef}
+                    finishId={activeFinish}
+                    warmLightOn={selectedTier !== 1}
+                    sanctuaryDark={effectiveSanctuaryDark}
+                    invalidateRef={invalidateRef}
+                    isMobile={isMobileViewport}
+                    cameraPreset={cameraPreset}
+                    cameraMoveNonce={cameraMoveNonce}
+                    ultrasoundMode={ultrasoundMode}
+                    engravedText={stageEngravedText}
+                  />
+                </Suspense>
+              )}
+            </div>
+
+            {/* Right / Bottom Column: Slim Segmented Console + Integrated CTA */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-3 lg:space-y-4">
+              <div className="space-y-3 lg:space-y-4">
+                {/* 01 · Compact Edition Selector */}
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="eyebrow">01 · Elige tu edición</span>
-                    <span className="text-[11px] text-[#8C6D46] font-serif italic">
-                      {selectedTier === 1 ? 'Luz natural sin LED' : 'Incluye LED 2700K'}
+                    <span className="eyebrow">01 · Edición</span>
+                    <span className="text-[10px] text-[#8C6D46] font-serif italic">
+                      {selectedTier === 1 ? 'Luz natural' : 'Pedestal LED 2700K'}
                     </span>
                   </div>
 
-                  <div className="space-y-2">
-                    {PRODUCT_TIERS.map((tier) => {
+                  <div className="grid grid-cols-3 lg:grid-cols-1 gap-1.5 lg:gap-2">
+                    {STEP1_TIERS.map((tier) => {
                       const isActive = selectedTier === tier.id;
                       return (
                         <button
                           key={tier.id}
                           type="button"
                           aria-pressed={isActive}
-                          onClick={() => handleSelectTier(tier.id as ProductTierId)}
-                          className={`w-full text-left flex items-center gap-2.5 sm:gap-3 p-2.5 border transition-all relative ${
+                          onClick={() => handleSelectTier(tier.id)}
+                          className={`text-left border transition-all px-2 py-1.5 lg:px-3.5 lg:py-2.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-0.5 lg:gap-2 ${
                             isActive
-                              ? 'border-2 border-[#8C6D46] bg-[#FFFFFF] shadow-sm'
+                              ? 'border-[#8C6D46] bg-[#FFFFFF] ring-1 ring-[#8C6D46] shadow-sm'
                               : 'border-[#E5DEC9] bg-[#F2ECE1]/45 hover:border-[#8C6D46]/60'
                           }`}
                         >
-                          <div className="relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 border border-[#E5DEC9] bg-[#E5DEC9]/30 overflow-hidden">
-                            <img
-                              src={EDITION_PORTRAIT_IMAGES[tier.id]}
-                              alt={tier.name}
-                              decoding="async"
-                              width={128}
-                              height={128}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-serif text-[15px] sm:text-lg text-[#2C2825] leading-tight">
-                                {tier.name}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-serif text-[12px] sm:text-sm lg:text-[15px] text-[#2C2825] leading-tight truncate">
+                                <span className="lg:hidden">{tier.mobileName}</span>
+                                <span className="hidden lg:inline">{tier.desktopName}</span>
                               </span>
                               {tier.id === 2 && (
-                                <span className="bg-[#2C2825] text-[#FAF7F2] px-1.5 py-0.5 text-[8px] uppercase tracking-[0.12em] leading-none">
-                                  ★ Más Elegida
+                                <span
+                                  aria-label="Más elegida"
+                                  className="text-[9px] text-[#8C6D46] font-semibold shrink-0"
+                                >
+                                  ★
                                 </span>
                               )}
                             </div>
-                            <span className="text-[11px] text-[#6E665E] font-light block leading-snug mt-0.5">
-                              {TIER_CONCISE_TAGLINE[tier.id]}
+                            <span className="text-[9px] sm:text-[10px] text-[#6E665E] font-light block leading-tight">
+                              {tier.detail}
                             </span>
                           </div>
 
-                          <div className="text-right shrink-0 flex items-center gap-2">
-                            <span className="font-serif italic text-sm sm:text-base text-[#8C6D46]">
-                              {tier.id === 3 ? 'Desde ' : ''}
-                              {formatCOP(tier.officialPrice)}
-                            </span>
-                            <span
-                              className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
-                                isActive
-                                  ? 'bg-[#8C6D46] border-[#8C6D46] text-[#FAF7F2]'
-                                  : 'bg-[#FAF7F2] border-[#D8CBB8] text-transparent'
-                              }`}
-                            >
-                              <Check className="w-3 h-3" aria-hidden="true" />
-                            </span>
-                          </div>
+                          <span className="font-serif italic text-[11px] sm:text-xs lg:text-sm text-[#8C6D46] shrink-0">
+                            {tier.id === 3 && <span className="hidden lg:inline">Desde </span>}
+                            {tier.priceLabel}
+                          </span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Tier 3 Modality + Live Brass Plaque Preview */}
+                {/* Tier 3 Compact Modality + Live Brass Plaque Input */}
                 {selectedTier === 3 && (
-                  <div className="p-2.5 sm:p-3 bg-[#F2ECE1] border border-[#E5DEC9] space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs text-[#2C2825]">Silueta materna:</span>
-                      <div className="inline-flex border border-[#E5DEC9] bg-[#FAF7F2] text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => setTier3Modality('photo_guide')}
-                          className={`px-2.5 py-1 transition-colors ${
-                            tier3Modality === 'photo_guide'
-                              ? 'bg-[#2C2825] text-[#FAF7F2]'
-                              : 'text-[#6E665E]'
-                          }`}
-                        >
-                          Fotos guía ($690.000)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTier3Modality('presencial_scan')}
-                          className={`px-2.5 py-1 transition-colors ${
-                            tier3Modality === 'presencial_scan'
-                              ? 'bg-[#2C2825] text-[#FAF7F2]'
-                              : 'text-[#6E665E]'
-                          }`}
-                        >
-                          Escaneo Bogotá ($780.000)
-                        </button>
-                      </div>
+                  <div className="p-2 sm:p-2.5 bg-[#F2ECE1] border border-[#E5DEC9] space-y-2">
+                    <div className="grid grid-cols-2 gap-1 text-[10px] sm:text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => setTier3Modality('photo_guide')}
+                        className={`py-1 px-2 border transition-colors ${
+                          tier3Modality === 'photo_guide'
+                            ? 'bg-[#2C2825] border-[#2C2825] text-[#FAF7F2]'
+                            : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#6E665E]'
+                        }`}
+                      >
+                        Fotos guía $690k
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTier3Modality('presencial_scan')}
+                        className={`py-1 px-2 border transition-colors ${
+                          tier3Modality === 'presencial_scan'
+                            ? 'bg-[#2C2825] border-[#2C2825] text-[#FAF7F2]'
+                            : 'bg-[#FAF7F2] border-[#E5DEC9] text-[#6E665E]'
+                        }`}
+                      >
+                        Escaneo $780k
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <label
                         htmlFor="wizard-step1-plaque"
-                        className="text-[11px] text-[#6E665E] shrink-0"
+                        className="text-[10px] text-[#6E665E] uppercase tracking-[0.12em] shrink-0"
                       >
                         Placa:
                       </label>
@@ -652,17 +595,18 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
                         placeholder="Ej. Emiliano · Semana 28"
                         value={customerData.plaqueText}
                         onFocus={() => selectCameraPreset('plaque')}
+                        onBlur={() => selectCameraPreset('full')}
                         onChange={(e) => updateCustomerData({ plaqueText: e.target.value })}
-                        className="flex-1 min-w-0 px-2.5 py-1 text-xs bg-[#FAF7F2] border border-[#E5DEC9] text-[#2C2825] placeholder:text-[#8E8377] focus:outline-none focus:border-[#8C6D46]"
+                        className="flex-1 min-w-0 px-2 py-1 text-xs bg-[#FAF7F2] border border-[#E5DEC9] text-[#2C2825] placeholder:text-[#8E8377] focus:outline-none focus:border-[#8C6D46]"
                       />
                     </div>
                   </div>
                 )}
 
-                {/* 02 · Resin Finish Swatches */}
-                <div className="space-y-2">
+                {/* 02 · Single-Row Ultra-Compact Resin Swatches */}
+                <div className="space-y-1.5">
                   <span className="eyebrow block">02 · Acabado en resina</span>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     {FINISH_OPTIONS.map((finish) => {
                       const preset = FINISH_PRESETS[finish.id];
                       const isActive = activeFinish === finish.id;
@@ -671,25 +615,24 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
                           key={finish.id}
                           type="button"
                           aria-pressed={isActive}
+                          aria-label={finish.name}
+                          title={finish.name}
                           onClick={() => setFinish(finish.id)}
-                          className={`p-2 sm:p-2.5 border text-center flex flex-col items-center justify-center transition-all ${
+                          className={`py-2 px-2 border flex items-center justify-center gap-1.5 transition-all ${
                             isActive
-                              ? 'bg-[#F2ECE1] border-2 border-[#8C6D46] shadow-sm'
+                              ? 'bg-[#FFFFFF] border-[#8C6D46] ring-1 ring-[#8C6D46] shadow-sm'
                               : 'bg-[#FAF7F2] border-[#E5DEC9] hover:border-[#8C6D46]/60'
                           }`}
                         >
                           <span
-                            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full shrink-0 shadow-inner mb-1"
+                            className="w-4 h-4 rounded-full shrink-0 shadow-inner"
                             style={{
                               background: preset.swatchGradient,
                               border: `1px solid ${preset.swatchBorder}`,
                             }}
                           />
-                          <span className="font-serif text-[12px] sm:text-sm text-[#2C2825] block leading-tight">
-                            {finish.name}
-                          </span>
-                          <span className="text-[10px] text-[#6E665E] font-light block leading-tight mt-0.5 line-clamp-1">
-                            {finish.subtitle}
+                          <span className="font-serif text-[12px] sm:text-[13px] text-[#2C2825] leading-none whitespace-nowrap">
+                            {RESIN_SHORT_NAMES[finish.id]}
                           </span>
                         </button>
                       );
@@ -697,24 +640,24 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Step 1 Footer */}
-            <div className="pt-3.5 border-t border-[#E5DEC9] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="text-xs text-[#6E665E]">
-                Reserva hoy con 50%:{' '}
-                <strong className="font-serif italic text-lg text-[#8C6D46] font-normal ml-1">
-                  {formatCOP(halfPrice)} COP
-                </strong>
+              {/* Integrated 50% Summary + CTA inside Console Column */}
+              <div className="pt-3 border-t border-[#E5DEC9] space-y-2.5">
+                <div className="flex items-baseline justify-between gap-2 text-xs text-[#6E665E]">
+                  <span>Reserva hoy (50%):</span>
+                  <strong className="font-serif italic text-base sm:text-lg text-[#8C6D46] font-normal">
+                    {formatCOP(halfPrice)} COP
+                  </strong>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-[#FAF7F2] bg-[#2C2825] hover:bg-[#8C6D46] transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  <span>Continuar a Ecografía 3D</span>
+                  <span>→</span>
+                </button>
               </div>
-
-              <button
-                type="submit"
-                className="px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-[#FAF7F2] bg-[#2C2825] hover:bg-[#8C6D46] transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap"
-              >
-                <span>Continuar a Ecografía 3D</span>
-                <span>→</span>
-              </button>
             </div>
           </div>
         )}
