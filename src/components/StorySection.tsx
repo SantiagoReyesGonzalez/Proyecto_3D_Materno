@@ -37,8 +37,8 @@ const UltrasoundComparisonSlider: React.FC = () => {
         <img
           src={`${import.meta.env.BASE_URL}images/editorial/macro_escultura_detalle.jpg`}
           alt="Detalle macro de la escultura Maternidad 3D con el bebé esculpido"
-          loading="lazy"
-          decoding="async"
+          loading="eager"
+          decoding="sync"
           width={1280}
           height={720}
           className="w-full h-full object-cover object-center pointer-events-none"
@@ -58,8 +58,8 @@ const UltrasoundComparisonSlider: React.FC = () => {
           <img
             src={`${import.meta.env.BASE_URL}images/editorial/proceso_2_ecografia_3d.jpg`}
             alt=""
-            loading="lazy"
-            decoding="async"
+            loading="eager"
+            decoding="sync"
             width={1280}
             height={720}
             className="w-full h-full object-cover object-center"
@@ -160,7 +160,7 @@ export const StorySection: React.FC = () => {
                 <img
                   src={item.image}
                   alt={item.alt}
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
                   width={896}
                   height={1200}

@@ -673,6 +673,8 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
                 <img
                   src={`${import.meta.env.BASE_URL}images/editorial/proceso_2_ecografia_3d.jpg`}
                   alt="Ejemplo válido de ecografía 3D/4D"
+                  loading="eager"
+                  decoding="sync"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -753,6 +755,8 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
                   <img
                     src={`${import.meta.env.BASE_URL}images/editorial/proceso_3_fotos_mama.jpg`}
                     alt="Referencia de perfil materno"
+                    loading="eager"
+                    decoding="sync"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -984,6 +988,8 @@ const OrderWizardContent: React.FC<OrderWizardContentProps> = ({
                 <img
                   src={EDITION_PORTRAIT_IMAGES[selectedTier]}
                   alt={currentTier.name}
+                  loading="eager"
+                  decoding="sync"
                   className="w-full h-full object-cover"
                 />
               </div>

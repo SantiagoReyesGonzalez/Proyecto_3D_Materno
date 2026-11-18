@@ -59,7 +59,7 @@ export const ProductPricingSection: React.FC = () => {
                       <img
                         src={EDITION_PORTRAIT_IMAGES[tier.id]}
                         alt={tier.name}
-                        loading="lazy"
+                        loading="eager"
                         decoding="async"
                         width={800}
                         height={1000}

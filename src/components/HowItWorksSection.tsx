@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProductStore } from '../store/useProductStore';
 
@@ -82,6 +82,13 @@ export const HowItWorksSection: React.FC = () => {
   const suppressClickUntilRef = useRef<number>(0);
 
   const activeStep = PROCESS_STEPS[activeIndex];
+
+  useEffect(() => {
+    PROCESS_STEPS.forEach((step) => {
+      const img = new Image();
+      img.src = step.image;
+    });
+  }, []);
 
   const handlePrev = () => {
     setActiveIndex((prev) => (prev - 1 + PROCESS_STEPS.length) % PROCESS_STEPS.length);
@@ -304,8 +311,8 @@ export const HowItWorksSection: React.FC = () => {
               <img
                 src={activeStep.image}
                 alt={activeStep.alt}
-                loading="lazy"
-                decoding="async"
+                loading="eager"
+                decoding="sync"
                 draggable={false}
                 width={1000}
                 height={750}

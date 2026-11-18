@@ -45,10 +45,9 @@ dialog::backdrop {
   background: rgba(44, 40, 37, 0.55);
 }
 
-/* Defer off-screen layout & paint work on mobile until scrolled close to view */
+/* Section container (avoid content-visibility deferral that delays lazy images over HTTPS) */
 .deferred-section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 760px;
+  content-visibility: visible;
 }
 
 /* Editorial Eyebrow Micro-label (WCAG AA tuned over #FAF7F2 and #F2ECE1) */

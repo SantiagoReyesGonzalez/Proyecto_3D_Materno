@@ -73,7 +73,7 @@ export const ExhibitionDetailsSection: React.FC = () => {
                 <img
                   src={moment.image}
                   alt={moment.alt}
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
                   width={896}
                   height={1200}
