@@ -3,7 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#FBF7F4" />
+    <script>
+      (function () {
+        try {
+          var q = new URLSearchParams(window.location.search).get('theme');
+          var h = new Date().getHours();
+          var mode = q === 'dark' || q === 'light' ? q : h >= 18 || h < 6 ? 'dark' : 'light';
+          var cs = document.querySelector('meta[name="color-scheme"]');
+          if (cs) cs.content = mode;
+          var tc = document.querySelector('meta[name="theme-color"]');
+          if (tc) tc.content = mode === 'dark' ? '#0D0A09' : '#FBF7F4';
+          document.documentElement.dataset.theme = mode;
+        } catch (e) {}
+      })();
+    </script>
     <title>Maternidad Atelier — Esculturas Maternas Hechas a Mano</title>
     <meta
       name="description"
@@ -21,11 +36,11 @@
       href="/Proyecto_3D_Materno/v3/images/editorial/hero_editorial_alabaster.jpg"
       fetchpriority="high"
     />
-    <script type="module" crossorigin src="/Proyecto_3D_Materno/v3/assets/index-qZRbo42k.js"></script>
+    <script type="module" crossorigin src="/Proyecto_3D_Materno/v3/assets/index-f2bNGm5y.js"></script>
     <link rel="modulepreload" crossorigin href="/Proyecto_3D_Materno/v3/assets/ui-vendor-CLKMo3Kf.js">
-    <link rel="stylesheet" crossorigin href="/Proyecto_3D_Materno/v3/assets/index-gvY2EMLF.css">
+    <link rel="stylesheet" crossorigin href="/Proyecto_3D_Materno/v3/assets/index-RwaLjxeg.css">
   </head>
-  <body class="bg-[#FBF7F4] text-[#2D221E] antialiased selection:bg-[#F2E0D6] selection:text-[#2D221E]">
+  <body class="bg-atelier-page text-atelier-ink antialiased selection:bg-atelier-selectionBg selection:text-atelier-selectionText">
     <div id="root"></div>
   </body>
 </html>
